@@ -12,17 +12,15 @@ combinaisons = []
 
 global best_of_best
 
-
-
 @dataclass
 class Pilot:
-
     def __init__(self):
         self.name = ""
         self.canardos = 0
         self.requests = []
         self.served = False
         return
+
 
 
 def append_combinaison(combinaisons, pilots: [], pilot_id: int, radix: []):
@@ -53,6 +51,8 @@ def evaluate_combinaison(combinaison) -> bool:
 def attribution():
     found: bool = False
     global pilots
+    best_evaluation = 0
+    best_combinaison = []
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
@@ -64,9 +64,17 @@ def attribution():
 
         append_combinaison(combinaisons, selected_pilots, 0, [])
         for combinaison in combinaisons:
-            print(str(combinaison) + " -> " + str(evaluate_combinaison(combinaison)))
+            evaluation = evaluate_combinaison(combinaison)
+            print(str(combinaison) + " -> " + str(evaluation))
+            if evaluation>best_evaluation:
+                best_evaluation=evaluation
+                best_combinaison = combinaison.copy()
 
-        found = True
+
+    print("Best combinaison")
+    print(str(best_combinaison) + " -> " + str(best_evaluation))
+
+
 
 
 def load_data(filename: str):
