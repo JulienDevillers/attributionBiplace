@@ -7,9 +7,11 @@ from math import comb
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
 
-hardware = ["I", "J", "K", "L", "M"]
 pilots = []  # of Pilot
 combinaisons = []
+
+global best_of_best
+
 
 
 @dataclass
@@ -35,36 +37,40 @@ def append_combinaison(combinaisons, pilots: [], pilot_id: int, radix: []):
 
 def evaluate_combinaison(combinaison) -> bool:
     bookings = {}
+    satisfied = 0
     for attribution in combinaison:
 
         hardware = attribution[1]
         if hardware in bookings:
-            return False
+            pass
         else:
             bookings[hardware] = 1
+            satisfied += 1
 
-    return True
+    return satisfied
 
 
 def attribution():
     found: bool = False
     global pilots
 
-    i: int = 3
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    while not found:
-        selected_pilots = pilots[:i]
+    for i in range(0, len(pilots)):
+        print("Run "+str(i))
+#    while not found:
+        selected_pilots = pilots[:i+1]
         combinaisons = []
 
         append_combinaison(combinaisons, selected_pilots, 0, [])
         for combinaison in combinaisons:
-            print(str(combinaison) + " " + str(evaluate_combinaison(combinaison)))
+            print(str(combinaison) + " -> " + str(evaluate_combinaison(combinaison)))
 
         found = True
 
 
 def load_data(filename: str):
+
     with open(filename, 'r') as csvfile:
         data_csv = csv.reader(csvfile, delimiter='\t')
         headers_row = next(data_csv, None)
