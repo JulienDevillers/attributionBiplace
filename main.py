@@ -1,6 +1,6 @@
 import argparse
 import csv
-
+import sys
 from dataclasses import dataclass
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
@@ -46,15 +46,16 @@ def evaluate_combinaison(combinaison) -> bool:
 
 
 def attribution():
-    found: bool = False
     global pilots
     global hardwares
+
     best_evaluation = 0
     best_combinaison = []
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
     i = 0
+    found: bool = False
     while not found and i < len(pilots):
         print("\nRun " + str(i))
 
@@ -85,7 +86,8 @@ def load_data(filename: str):
     global pilots
     global hardwares
 
-    with open(filename, 'r') as csvfile:
+#    with open(filename, 'r') as csvfile:
+    with sys.stdin as csvfile:
         data_csv = csv.reader(csvfile, delimiter='\t')
         headers_row = next(data_csv, None)
         for row in data_csv:
@@ -99,27 +101,8 @@ def load_data(filename: str):
     hardwares = list(set(hardwares))
     print("Hardware: " + str(hardwares))
 
-    # for pilot in pilots:
-    #     print(pilot.name + " " + str(len(pilot.requests)))
-
 
 def main():
-    parser = argparse.ArgumentParser()
-    # parser.add_argument("projectRootDirectory", type=str, help="root directory of the project")
-    # parser.add_argument("-p", "--platform", help="generate code only for the selected project.")
-    # parser.add_argument("-f", "--force", help="force generation regardless dates", action="store_true")
-    # parser.add_argument("--noFormatting", help="omit code formatting", action="store_true")
-    # parser.add_argument("--noSaxon", help="omit saxon autogeneration", action="store_true")
-    # parser.add_argument("--noSupportLib", help="omit saxon autogeneration", action="store_true")
-    # parser.add_argument("--noCubeMx", help="omit cubeMx generation", action="store_true")
-    # parser.add_argument("--noLocalization", help="omit localization generation", action="store_true")
-    # parser.add_argument("--noRemoveModified", help="omit remove imported modified library files", action="store_true")
-    # parser.add_argument("-w", "--workers", help="number of workers, default 10", type=int, default=10)
-    # parser.add_argument("--debug", help="debug mode. Add some helpers classes and functions", action="store_true")
-    #
-    # globals.args = parser.parse_args()
-    #
-    # globals.args.projectRootDirectory = os.path.abspath(globals.args.projectRootDirectory)
 
     load_data(r"f:/Nextcloud/parapente/soft réservation matériel/test1.txt")
     attribution()
