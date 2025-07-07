@@ -2,15 +2,12 @@ import argparse
 import csv
 
 from dataclasses import dataclass
-from math import comb
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
 
 pilots = []  # of Pilot
-combinaisons = []
-
-global best_of_best
+hardwares = []
 
 
 @dataclass
@@ -51,12 +48,14 @@ def evaluate_combinaison(combinaison) -> bool:
 def attribution():
     found: bool = False
     global pilots
+    global hardwares
     best_evaluation = 0
     best_combinaison = []
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    for i in range(0, len(pilots)):
+    i = 0
+    while not found and i < len(pilots):
         print("\nRun " + str(i))
 
         selected_pilots = pilots[:i + 1]
@@ -69,12 +68,23 @@ def attribution():
             if evaluation > best_evaluation:
                 best_evaluation = evaluation
                 best_combinaison = combinaison.copy()
+                found = evaluation == len(hardwares)
+        i += 1
 
-    print("\nBest combinaison")
+    print("\nBest combinaison:")
     print(str(best_combinaison) + " -> " + str(best_evaluation))
 
 
+def add_requested_hardware(pilot: Pilot, hardware: str):
+    pilot.requests.append(hardware)
+    global hardwares
+    hardwares.append(hardware)
+
+
 def load_data(filename: str):
+    global pilots
+    global hardwares
+
     with open(filename, 'r') as csvfile:
         data_csv = csv.reader(csvfile, delimiter='\t')
         headers_row = next(data_csv, None)
@@ -82,17 +92,12 @@ def load_data(filename: str):
             pilot = Pilot()
             pilot.name = row[0]
             pilot.canardos = int(row[1])
-            try:
-                pilot.requests.append(row[2])
-                pilot.requests.append(row[3])
-                pilot.requests.append(row[4])
-                pilot.requests.append(row[5])
-                pilot.requests.append(row[6])
-                pilot.requests.append(row[7])
-            except IndexError:
-                pass
-            global pilots
+            for i in range(2, len(row)):
+                add_requested_hardware(pilot, row[i])
             pilots.append(pilot)
+
+    hardwares = list(set(hardwares))
+    print("Hardware: " + str(hardwares))
 
     # for pilot in pilots:
     #     print(pilot.name + " " + str(len(pilot.requests)))
