@@ -1,0 +1,114 @@
+import argparse
+import csv
+
+from dataclasses import dataclass
+from math import comb
+
+# format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
+
+
+hardware = ["I", "J", "K", "L", "M"]
+pilots = []  # of Pilot
+combinaisons = []
+
+
+@dataclass
+class Pilot:
+
+    def __init__(self):
+        self.name = ""
+        self.canardos = 0
+        self.requests = []
+        self.served = False
+        return
+
+
+def append_combinaison(combinaisons, pilots: [], pilot_id: int, radix: []):
+    if pilot_id >= len(pilots):
+        combinaisons.append(radix)
+    else:
+        for request in pilots[pilot_id].requests:
+            r = radix.copy()
+            r.append([pilots[pilot_id].name, request])
+            append_combinaison(combinaisons, pilots, pilot_id + 1, r)
+
+
+def evaluate_combinaison(combinaison) -> bool:
+    bookings = {}
+    for attribution in combinaison:
+
+        hardware = attribution[1]
+        if hardware in bookings:
+            return False
+        else:
+            bookings[hardware] = 1
+
+    return True
+
+
+def attribution():
+    found: bool = False
+    global pilots
+
+    i: int = 3
+    pilots.sort(key=lambda pilot: pilot.canardos)
+
+    while not found:
+        selected_pilots = pilots[:i]
+        combinaisons = []
+
+        append_combinaison(combinaisons, selected_pilots, 0, [])
+        for combinaison in combinaisons:
+            print(str(combinaison) + " " + str(evaluate_combinaison(combinaison)))
+
+        found = True
+
+
+def load_data(filename: str):
+    with open(filename, 'r') as csvfile:
+        data_csv = csv.reader(csvfile, delimiter='\t')
+        headers_row = next(data_csv, None)
+        for row in data_csv:
+            pilot = Pilot()
+            pilot.name = row[0]
+            pilot.canardos = int(row[1])
+            try:
+                pilot.requests.append(row[2])
+                pilot.requests.append(row[3])
+                pilot.requests.append(row[4])
+                pilot.requests.append(row[5])
+                pilot.requests.append(row[6])
+                pilot.requests.append(row[7])
+            except IndexError:
+                pass
+            global pilots
+            pilots.append(pilot)
+
+    # for pilot in pilots:
+    #     print(pilot.name + " " + str(len(pilot.requests)))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    # parser.add_argument("projectRootDirectory", type=str, help="root directory of the project")
+    # parser.add_argument("-p", "--platform", help="generate code only for the selected project.")
+    # parser.add_argument("-f", "--force", help="force generation regardless dates", action="store_true")
+    # parser.add_argument("--noFormatting", help="omit code formatting", action="store_true")
+    # parser.add_argument("--noSaxon", help="omit saxon autogeneration", action="store_true")
+    # parser.add_argument("--noSupportLib", help="omit saxon autogeneration", action="store_true")
+    # parser.add_argument("--noCubeMx", help="omit cubeMx generation", action="store_true")
+    # parser.add_argument("--noLocalization", help="omit localization generation", action="store_true")
+    # parser.add_argument("--noRemoveModified", help="omit remove imported modified library files", action="store_true")
+    # parser.add_argument("-w", "--workers", help="number of workers, default 10", type=int, default=10)
+    # parser.add_argument("--debug", help="debug mode. Add some helpers classes and functions", action="store_true")
+    #
+    # globals.args = parser.parse_args()
+    #
+    # globals.args.projectRootDirectory = os.path.abspath(globals.args.projectRootDirectory)
+
+    load_data(r"f:/Nextcloud/parapente/soft réservation matériel/test1.txt")
+    attribution()
+
+
+if __name__ == '__main__':
+    main()
