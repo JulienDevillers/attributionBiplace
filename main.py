@@ -57,8 +57,8 @@ def combinaisonToStr(combinaison: list[Attribution]) -> str:
     result = "["
     for attribution in combinaison:
         if attribution.satisfied:
-            result += "[" + attribution.pilot + ", " + attribution.hardware + "] "
-    result += "]"
+            result += "[" + attribution.pilot + ", " + attribution.hardware + "], "
+    result = result[:-2] + "]"
     return result
 
 
