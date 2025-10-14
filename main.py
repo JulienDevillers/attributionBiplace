@@ -3,11 +3,8 @@ import csv
 import sys
 from dataclasses import dataclass
 
+
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
-
-
-pilots = []  # of Pilot
-hardwares = []
 
 
 @dataclass
@@ -20,13 +17,25 @@ class Pilot:
         return
 
 
-def append_combinaison(combinaisons, pilots: [], pilot_id: int, radix: []):
+class Attribution:
+    def __init__(self, pilot: str, hardware: str):
+        self.pilot = pilot
+        self.hardware = hardware
+        self.satisfied = False
+
+
+pilots: list[Pilot] = []
+hardwares: list[str] = []
+
+
+def append_combinaison(combinaisons: list[Attribution], pilots: list[Pilot], pilot_id: int, radix: list[Attribution]):
     if pilot_id >= len(pilots):
         combinaisons.append(radix)
     else:
         for request in pilots[pilot_id].requests:
             r = radix.copy()
-            r.append([pilots[pilot_id].name, request])
+            attribution = Attribution(pilots[pilot_id].name, request)
+            r.append(attribution)
             append_combinaison(combinaisons, pilots, pilot_id + 1, r)
 
 
@@ -35,12 +44,22 @@ def evaluate_combinaison(combinaison) -> bool:
     satisfied = 0
     for attribution in combinaison:
 
-        hardware = attribution[1]
+        hardware = attribution.hardware
         if not hardware in bookings:
             bookings[hardware] = 1
             satisfied += 1
+            attribution.satisfied = True
 
     return satisfied
+
+
+def combinaisonToStr(combinaison: list[Attribution]) -> str:
+    result = "["
+    for attribution in combinaison:
+        if attribution.satisfied:
+            result += "[" + attribution.pilot + ", " + attribution.hardware + "] "
+    result += "]"
+    return result
 
 
 def attribution():
@@ -48,7 +67,7 @@ def attribution():
     global hardwares
 
     best_evaluation = 0
-    best_combinaison = []
+    best_combinaison: list[Attribution] = []
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
@@ -58,12 +77,13 @@ def attribution():
         print("\nRun " + str(i))
 
         selected_pilots = pilots[:i + 1]
-        combinaisons = []
+        combinaisons: list[Attribution] = []
 
         append_combinaison(combinaisons, selected_pilots, 0, [])
+
         for combinaison in combinaisons:
             evaluation = evaluate_combinaison(combinaison)
-            print(str(combinaison) + " -> " + str(evaluation))
+            print(combinaisonToStr(combinaison) + " -> ", str(evaluation))
             if evaluation > best_evaluation:
                 best_evaluation = evaluation
                 best_combinaison = combinaison.copy()
@@ -71,7 +91,7 @@ def attribution():
         i += 1
 
     print("\nBest combinaison:")
-    print(str(best_combinaison) + " -> " + str(best_evaluation))
+    print(combinaisonToStr(best_combinaison) + " -> " + str(best_evaluation))
 
 
 def add_requested_hardware(pilot: Pilot, hardware: str):
@@ -85,7 +105,7 @@ def load_data(filename: str):
     global hardwares
 
     with open(filename, 'r') as csvfile:
-#    with sys.stdin as csvfile:
+        #    with sys.stdin as csvfile:
         data_csv = csv.reader(csvfile, delimiter='\t')
         headers_row = next(data_csv, None)
         for row in data_csv:
@@ -101,7 +121,6 @@ def load_data(filename: str):
 
 
 def main():
-
     load_data(r"test1.txt")
     attribution()
 
