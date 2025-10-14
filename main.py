@@ -77,7 +77,7 @@ def attribution():
         print("\nRun " + str(i + 1) + " pilotes")
 
         selected_pilots = pilots[:i + 1]
-        combinaisons: list[Attribution] = []
+        combinaisons: list[list[Attribution]] = []
 
         append_combinaison(combinaisons, selected_pilots, 0, [])
 
