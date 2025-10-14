@@ -36,9 +36,7 @@ def evaluate_combinaison(combinaison) -> bool:
     for attribution in combinaison:
 
         hardware = attribution[1]
-        if hardware in bookings:
-            pass
-        else:
+        if not hardware in bookings:
             bookings[hardware] = 1
             satisfied += 1
 
@@ -86,8 +84,8 @@ def load_data(filename: str):
     global pilots
     global hardwares
 
-#    with open(filename, 'r') as csvfile:
-    with sys.stdin as csvfile:
+    with open(filename, 'r') as csvfile:
+#    with sys.stdin as csvfile:
         data_csv = csv.reader(csvfile, delimiter='\t')
         headers_row = next(data_csv, None)
         for row in data_csv:
@@ -104,7 +102,7 @@ def load_data(filename: str):
 
 def main():
 
-    load_data(r"f:/Nextcloud/parapente/soft réservation matériel/test1.txt")
+    load_data(r"test1.txt")
     attribution()
 
 
