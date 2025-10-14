@@ -53,10 +53,10 @@ def evaluate_combinaison(combinaison) -> bool:
     return satisfied
 
 
-def combinaisonToStr(combinaison: list[Attribution]) -> str:
+def combinaisonToStr(combinaison: list[Attribution], excludeNotSatisfied: bool) -> str:
     result = "["
     for attribution in combinaison:
-        if attribution.satisfied:
+        if attribution.satisfied or excludeNotSatisfied:
             result += "[" + attribution.pilot + ", " + attribution.hardware + "], "
     result = result[:-2] + "]"
     return result
@@ -83,7 +83,7 @@ def attribution():
 
         for combinaison in combinaisons:
             evaluation = evaluate_combinaison(combinaison)
-            print(combinaisonToStr(combinaison) + " -> ", str(evaluation))
+            print(combinaisonToStr(combinaison, True) + " -> ", str(evaluation))
             if evaluation > best_evaluation:
                 best_evaluation = evaluation
                 best_combinaison = combinaison.copy()
@@ -91,7 +91,7 @@ def attribution():
         i += 1
 
     print("\nBest combinaison:")
-    print(combinaisonToStr(best_combinaison) + " -> " + str(best_evaluation))
+    print(combinaisonToStr(best_combinaison, False) + " -> " + str(best_evaluation))
 
 
 def add_requested_hardware(pilot: Pilot, hardware: str):
