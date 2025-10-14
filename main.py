@@ -71,10 +71,10 @@ def attribution():
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    i = 0
+    i = len(hardwares) - 1
     found: bool = False
     while not found and i < len(pilots):
-        print("\nRun " + str(i))
+        print("\nRun " + str(i + 1) + " pilotes")
 
         selected_pilots = pilots[:i + 1]
         combinaisons: list[Attribution] = []
