@@ -7,7 +7,6 @@ from dataclasses import dataclass
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
 
-@dataclass
 class Pilot:
     def __init__(self):
         self.name = ""
@@ -16,6 +15,10 @@ class Pilot:
         self.served = False
         return
 
+    def add_requested_hardware(self, hardware: str):
+        self.requests.append(hardware)
+        global hardwares
+        hardwares.append(hardware)
 
 class Attribution:
     def __init__(self, pilot: str, hardware: str):
@@ -37,6 +40,10 @@ def append_combinaison(combinaisons: list[Attribution], pilots: list[Pilot], pil
             attribution = Attribution(pilots[pilot_id].name, request)
             r.append(attribution)
             append_combinaison(combinaisons, pilots, pilot_id + 1, r)
+
+
+def initCombinaisons(combinaisons: list[Attribution], pilots: list[Pilot]):
+    append_combinaison(combinaisons, pilots, 0, [])
 
 
 def evaluate_combinaison(combinaison) -> bool:
@@ -79,7 +86,7 @@ def attribution():
         selected_pilots = pilots[:i + 1]
         combinaisons: list[list[Attribution]] = []
 
-        append_combinaison(combinaisons, selected_pilots, 0, [])
+        initCombinaisons(combinaisons, selected_pilots)
 
         for combinaison in combinaisons:
             evaluation = evaluate_combinaison(combinaison)
@@ -92,12 +99,6 @@ def attribution():
 
     print("\nBest combinaison:")
     print(combinaisonToStr(best_combinaison, False) + " -> " + str(best_evaluation))
-
-
-def add_requested_hardware(pilot: Pilot, hardware: str):
-    pilot.requests.append(hardware)
-    global hardwares
-    hardwares.append(hardware)
 
 
 def load_data(filename: str):
@@ -113,7 +114,7 @@ def load_data(filename: str):
             pilot.name = row[0]
             pilot.canardos = int(row[1])
             for i in range(2, len(row)):
-                add_requested_hardware(pilot, row[i])
+                pilot.add_requested_hardware(row[i])
             pilots.append(pilot)
 
     hardwares = list(set(hardwares))
