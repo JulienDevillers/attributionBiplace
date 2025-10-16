@@ -43,7 +43,7 @@ def append_combinaison(combinaisons: list[Attribution], pilots: list[Pilot], pil
 
 
 def initCombinaisons(combinaisons: list[Attribution], pilots: list[Pilot]):
-    append_combinaison(combinaisons, pilots, 0, [])
+    append_combinaison(combinaisons, pilots, 0, []) 
 
 
 def evaluate_combinaison(combinaison) -> bool:
