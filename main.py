@@ -2,6 +2,7 @@ import argparse
 import csv
 import sys
 
+
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
 
@@ -15,8 +16,6 @@ class Pilot:
 
     def add_requested_hardware(self, hardware: str):
         self.requests.append(hardware)
-        global hardwares
-        hardwares.append(hardware)
 
 
 class Attribution:
@@ -56,35 +55,28 @@ class Run:
     def __init__(self):
         self.combinations: list[Combination] = []
 
-    def append_combinaison(self, pilots: list[Pilot], pilot_id: int, preinit: list[Attribution]):
-        if pilot_id >= len(pilots):
+    def appendCombination(self, pilots: list[Pilot], pilot_id: int, preinit: list[Attribution]):
+        if pilot_id == len(pilots):
             self.combinations.append(Combination(preinit))
         else:
             for request in pilots[pilot_id].requests:
                 p = preinit.copy()
                 attribution = Attribution(pilots[pilot_id].name, request)
                 p.append(attribution)
-                self.append_combinaison(pilots, pilot_id + 1, p)
+                self.appendCombination(pilots, pilot_id + 1, p)
 
     def init(self, pilots: list[Pilot]):
-        self.append_combinaison(pilots, 0, [])
+        self.appendCombination(pilots, 0, [])
 
-    def combinaisonsCount(self):
+    def combinationsCount(self):
         return len(self.combinations)
 
     def at(self, index: int):
         return self.combinations[index]
 
 
-pilots: list[Pilot] = []
-hardwares: list[str] = []
-
-
-def attribution():
-    global pilots
-    global hardwares
-
-    best_combinaison: Combination = None
+def attribution(pilots: list[Pilot], hardwares: list[str]):
+    bestCombination: Combination = None
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
@@ -97,24 +89,24 @@ def attribution():
 
         run = Run()
         run.init(selected_pilots)
-        combinaisonsCount = run.combinaisonsCount()
-        for j in range(0, combinaisonsCount - 1):
+        combinationsCount = run.combinationsCount()
+        for j in range(0, combinationsCount - 1):
             combination = run.at(j)
             combination.evaluate()
             print(combination.toStr(True) + " -> ", str(combination.evaluation))
 
-            if best_combinaison is None or combination.evaluation > best_combinaison.evaluation:
-                best_combinaison = combination
-                found = best_combinaison.evaluation == len(hardwares)
+            if bestCombination is None or combination.evaluation > bestCombination.evaluation:
+                bestCombination = combination
+                found = bestCombination.evaluation == len(hardwares)
         i += 1
 
     print("\nBest combination:")
-    print(best_combinaison.toStr(False) + " -> " + str(best_combinaison.evaluation))
+    print(bestCombination.toStr(False) + " -> " + str(bestCombination.evaluation))
 
 
 def load_data(filename: str):
-    global pilots
-    global hardwares
+    pilots: list[Pilot] = []
+    hardwares: list[str] = []
 
     with open(filename, 'r') as csvfile:
         #    with sys.stdin as csvfile:
@@ -125,16 +117,19 @@ def load_data(filename: str):
             pilot.name = row[0]
             pilot.canardos = int(row[1])
             for i in range(2, len(row)):
-                pilot.add_requested_hardware(row[i])
+                hardware = row[i]
+                pilot.add_requested_hardware(hardware)
+                hardwares.append(hardware)
             pilots.append(pilot)
 
     hardwares = list(set(hardwares))
     print("Hardware: " + str(hardwares))
+    return pilots, hardwares
 
 
 def main():
-    load_data(r"test1.txt")
-    attribution()
+    pilots, hardwares = load_data(r"test1.txt")
+    attribution(pilots, hardwares)
 
 
 if __name__ == '__main__':
