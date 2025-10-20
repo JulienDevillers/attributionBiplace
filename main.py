@@ -31,19 +31,19 @@ pilots: list[Pilot] = []
 hardwares: list[str] = []
 
 
-def append_combinaison(combinaisons: list[Attribution], pilots: list[Pilot], pilot_id: int, radix: list[Attribution]):
+def append_combinaison(combinaisons: list[list[Attribution]], pilots: list[Pilot], pilot_id: int, preinit: list[Attribution]):
     if pilot_id >= len(pilots):
-        combinaisons.append(radix)
+        combinaisons.append(preinit)
     else:
         for request in pilots[pilot_id].requests:
-            r = radix.copy()
+            p = preinit.copy()
             attribution = Attribution(pilots[pilot_id].name, request)
-            r.append(attribution)
-            append_combinaison(combinaisons, pilots, pilot_id + 1, r)
+            p.append(attribution)
+            append_combinaison(combinaisons, pilots, pilot_id + 1, p)
 
 
-def initCombinaisons(combinaisons: list[Attribution], pilots: list[Pilot]):
-    append_combinaison(combinaisons, pilots, 0, []) 
+def initCombinaisons(combinaisons: list[list[Attribution]], pilots: list[Pilot]):
+    append_combinaison(combinaisons, pilots, 0, [])
 
 
 def evaluate_combinaison(combinaison) -> bool:
@@ -74,7 +74,7 @@ def attribution():
     global hardwares
 
     best_evaluation = 0
-    best_combinaison: list[Attribution] = []
+    best_combinaison: list[Attribution]
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
