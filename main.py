@@ -1,10 +1,17 @@
-import argparse
 import csv
 import sys
 
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
+# Principe de calcul :
+# 1- Soit n le nombre de matériels disponibles
+# 2- On choisit les n pilotes les plus prioritaires
+# 3- On crée toutes les combinaisons d'attribution (pilote-matériel) possibles
+# 4- Elles sont triées par priorité du pilote puis par priorité de souhait de matériel
+# 5- La solution retenue est la première qui permet de servir tous les pilotes
+# 6- S'il n'existe pas de solution parce qu'il y a des conflits de souhait de matériels entre les pilotes,
+#     on fait rentrer le pilote suivant en terme de priorité dans le calcul et on recommence en 3
 
 class Pilot:
     def __init__(self):
