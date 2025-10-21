@@ -47,10 +47,10 @@ class Combination:
                 attribution.satisfied = True
         self.evaluation = len(bookings)
 
-    def toStr(self, excludeNotSatisfied: bool) -> str:
+    def toStr(self, showUnsatisfiedAttributions: bool) -> str:
         result = "["
         for attribution in self.attributions:
-            if attribution.satisfied or excludeNotSatisfied:
+            if attribution.satisfied or showUnsatisfiedAttributions:
                 result += "[" + attribution.pilot + ", " + attribution.hardware + "], "
         result = result[:-2] + "]"
         return result
