@@ -75,17 +75,17 @@ class Run:
         return self.combinations[index]
 
 
-def attribution(pilots: list[Pilot], hardwares: list[str]):
+def assign(pilots: list[Pilot], hardwares: list[str]):
     bestCombination: Combination = None
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    i = len(hardwares) - 1
+    i = len(hardwares)
     found: bool = False
     while not found and i < len(pilots):
-        print("\nRun " + str(i + 1) + " pilotes")
+        print("\nRun " + str(i) + " pilotes")
 
-        selected_pilots = pilots[:i + 1]
+        selected_pilots = pilots[:i]
 
         run = Run()
         run.init(selected_pilots)
@@ -129,7 +129,7 @@ def load_data(filename: str):
 
 def main():
     pilots, hardwares = load_data(r"test1.txt")
-    attribution(pilots, hardwares)
+    assign(pilots, hardwares)
 
 
 if __name__ == '__main__':
