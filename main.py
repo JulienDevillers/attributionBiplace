@@ -82,15 +82,16 @@ def assign(pilots: list[Pilot], hardwares: list[str]):
 
     i = len(hardwares)
     found: bool = False
-    while not found and i < len(pilots):
-        print("\nRun " + str(i) + " pilotes")
 
+    while not found and i < len(pilots):
+
+        print("\nRun " + str(i) + " pilotes")
         selected_pilots = pilots[:i]
 
         run = Run()
         run.init(selected_pilots)
-        combinationsCount = run.combinationsCount()
-        for j in range(0, combinationsCount - 1):
+
+        for j in range(0, run.combinationsCount()):
             combination = run.at(j)
             combination.evaluate()
             print(combination.toStr(True) + " -> ", str(combination.evaluation))
