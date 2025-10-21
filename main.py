@@ -9,7 +9,7 @@ import sys
 # 2- On choisit les n pilotes les plus prioritaires
 # 3- On crée toutes les combinaisons d'attribution (pilote-matériel) possibles
 # 4- Elles sont triées par priorité du pilote puis par priorité de souhait de matériel
-# 5- La solution retenue est la première qui permet de servir tous les pilotes
+# 5- La solution retenue est la première qui permet de servir tous les pilotes avec un matériel différent pour chaque
 # 6- S'il n'existe pas de solution parce qu'il y a des conflits de souhait de matériels entre les pilotes,
 #     on fait rentrer le pilote suivant en terme de priorité dans le calcul et on recommence en 3
 
@@ -39,15 +39,13 @@ class Combination:
 
     def evaluate(self):
         bookings = {}
-        satisfiedCount = 0
 
         for attribution in self.attributions:
             hardware = attribution.hardware
             if not hardware in bookings:
                 bookings[hardware] = 1
-                satisfiedCount += 1
                 attribution.satisfied = True
-        self.evaluation = satisfiedCount
+        self.evaluation = len(bookings)
 
     def toStr(self, excludeNotSatisfied: bool) -> str:
         result = "["
