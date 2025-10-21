@@ -65,7 +65,7 @@ class Run:
                 p.append(attribution)
                 self.appendCombination(pilots, pilot_id + 1, p)
 
-    def init(self, pilots: list[Pilot]):
+    def buildCombinations(self, pilots: list[Pilot]):
         self.appendCombination(pilots, 0, [])
 
     def combinationsCount(self):
@@ -75,12 +75,12 @@ class Run:
         return self.combinations[index]
 
 
-def assign(pilots: list[Pilot], hardwares: list[str]):
+def assign(pilots: list[Pilot], hardwaresCount):
     bestCombination: Combination = None
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    i = len(hardwares)
+    i = hardwaresCount
     found: bool = False
 
     while not found and i < len(pilots):
@@ -89,7 +89,7 @@ def assign(pilots: list[Pilot], hardwares: list[str]):
         selected_pilots = pilots[:i]
 
         run = Run()
-        run.init(selected_pilots)
+        run.buildCombinations(selected_pilots)
 
         for j in range(0, run.combinationsCount()):
             combination = run.at(j)
@@ -98,7 +98,7 @@ def assign(pilots: list[Pilot], hardwares: list[str]):
 
             if bestCombination is None or combination.evaluation > bestCombination.evaluation:
                 bestCombination = combination
-                found = bestCombination.evaluation == len(hardwares)
+                found = bestCombination.evaluation == hardwaresCount
         i += 1
 
     print("\nBest combination:")
@@ -130,7 +130,7 @@ def load_data(filename: str):
 
 def main():
     pilots, hardwares = load_data(r"test1.txt")
-    assign(pilots, hardwares)
+    assign(pilots, len(hardwares))
 
 
 if __name__ == '__main__':
