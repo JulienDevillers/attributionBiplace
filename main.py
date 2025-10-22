@@ -6,6 +6,7 @@ import sys
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
 # Principe de calcul :
+# Note : il s'agit d'un algo brute force qui ne fonctionne que parce qu'on a une petite volumétrie.
 # 1- Soit n le nombre de matériels disponibles
 # 2- On choisit les n pilotes les plus prioritaires
 # 3- On crée toutes les combinaisons d'attribution (pilote-matériel) possibles
@@ -20,6 +21,7 @@ class Pilot:
         self.canardos = 0
         self.requests = []
         self.served = False
+        self.index = 0
         return
 
     def add_requested_hardware(self, hardware: str):
@@ -34,25 +36,30 @@ class Attribution:
 
 
 class Combination:
-    def __init__(self, attributions: list[Attribution]):
-        self.attributions: list[Attribution] = attributions
+    def __init__(self, attributions: list[str]):
+        self.attributions: list[str] = attributions
         self.evaluation = -1
 
-    def evaluate(self):
-        bookings = {}
-
-        for attribution in self.attributions:
-            hardware = attribution.hardware
-            if not hardware in bookings:
-                bookings[hardware] = 1
-                attribution.satisfied = True
-        self.evaluation = len(bookings)
+#     def evaluate(self):
+#         self.evaluation=len(set(self.attributions))
+# #        bookings = {}
+        # for attribution in self.attributions:
+        #     hardware = attribution.hardware
+        #     if not hardware in bookings:
+        #         bookings[hardware] = 1
+        #         attribution.satisfied = True
+        # self.evaluation = len(bookings)
 
     def toStr(self, showUnsatisfiedAttributions: bool) -> str:
         result = "["
+        bookings = {}
         for attribution in self.attributions:
-            if attribution.satisfied or showUnsatisfiedAttributions:
-                result += "[" + attribution.pilot + ", " + attribution.hardware + "], "
+            satisfied = False
+            if not attribution in bookings:
+                bookings[attribution] = 1
+                satisfied=True
+            if satisfied or showUnsatisfiedAttributions:
+                result +=  attribution.hardware + ", "
         result = result[:-2] + "]"
         return result
 
@@ -60,26 +67,52 @@ class Combination:
 class Run:
     def __init__(self):
         self.combinations: list[Combination] = []
+        self.indexPilot = [0] * 100  # todo mieux dimensionner
+        self.ended = False
 
-    def appendCombination(self, pilots: list[Pilot], pilot_id: int, preinit: list[Attribution]):
-        if pilot_id == len(pilots):
-            self.combinations.append(Combination(preinit))
-        else:
-            for request in pilots[pilot_id].requests:
-                p = preinit.copy()
-                attribution = Attribution(pilots[pilot_id].name, request)
-                p.append(attribution)
-                self.appendCombination(pilots, pilot_id + 1, p)
+    def setPilots(self, pilots: list[Pilot]):
+        for pilot in pilots:
+            pilot.index = 0
 
-    def buildCombinations(self, pilots: list[Pilot]):
-        self.appendCombination(pilots, 0, [])
+    def getFirstCombination(self, pilots:list[Pilot]):
+        result = []
+        for pilot in pilots:
+            pilot.index=0
+            result.append(pilot.requests[0])
+        return result
 
-    def combinationsCount(self):
-        return len(self.combinations)
+    def getNextCombination(self, pilots: list[Pilot], result: list[str]):
+        for i in range(len(pilots)-1,-1,-1):
+            pilot = pilots[i]
+            pilot.index += 1
+            overrun=False
+            if pilot.index == len(pilot.requests):
+                pilot.index = 0
+                overrun = True
+            result[i] = pilot.requests[pilot.index]
+            if overrun != True:
+                return True
+        return False
 
-    def at(self, index: int):
-        return self.combinations[index]
 
+def toStr(attributions:list[str], pilots:list[Pilot], showUnsatisfiedAttributions: bool) -> str:
+    result = "["
+    bookings = {}
+    i=0
+    for attribution in attributions:
+        satisfied = False
+        if not attribution in bookings:
+            bookings[attribution] = 1
+            satisfied=True
+        if satisfied or showUnsatisfiedAttributions:
+            result += "["+pilots[i].name+", " +attribution + "], "
+        i+=1
+    result = result[:-2] + "]"
+    return result
+
+def evaluate(combination:list[str]):
+    unique = set(combination)
+    return len(unique)
 
 def assign(pilots: list[Pilot], hardwaresCount):
     start_ns = time.time_ns()
@@ -96,23 +129,27 @@ def assign(pilots: list[Pilot], hardwaresCount):
         selected_pilots = pilots[:i]
 
         run = Run()
-        run.buildCombinations(selected_pilots)
-      #  print("End buildCombinations / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+        run.setPilots(selected_pilots)
 
-        for j in range(0, run.combinationsCount()):
-            combination = run.at(j)
-            combination.evaluate()
-            #       print(combination.toStr(True) + " -> ", str(combination.evaluation))
+        combination = run.getFirstCombination(selected_pilots)
+        bestEvaluation = evaluate(combination)
+        bestCombination = combination.copy()
+        count = 0
+     #   print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation))
 
-            if bestCombination is None or combination.evaluation > bestCombination.evaluation:
-                bestCombination = combination
-                found = bestCombination.evaluation == hardwaresCount
+        while run.getNextCombination(selected_pilots, combination):
+            count+=1
+            evaluation = evaluate(combination)
+     #       print(str(count)+" "+str(combination)+" -> "+str(evaluation))
+            if evaluation > bestEvaluation:
+                bestCombination = combination.copy()
+                bestEvaluation=evaluation
+                found = bestEvaluation == hardwaresCount
 
         i += 1
-     #   print("End Evaluation / " + str(i) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
     print("\nBest combination:")
-    print(bestCombination.toStr(False) + " -> " + str(bestCombination.evaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+    print(toStr(bestCombination,selected_pilots, False) + " -> " + str(bestEvaluation)+ " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
 
 def load_data(filename: str):
@@ -139,7 +176,7 @@ def load_data(filename: str):
 
 
 def main():
-    pilots, hardwares = load_data(r"test1.txt")
+    pilots, hardwares = load_data(r"test6.txt")
     assign(pilots, len(hardwares))
 
 
