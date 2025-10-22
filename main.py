@@ -1,4 +1,5 @@
 import csv
+import time
 import sys
 
 
@@ -81,6 +82,7 @@ class Run:
 
 
 def assign(pilots: list[Pilot], hardwaresCount):
+    start_ns = time.time_ns()
     bestCombination: Combination = None
 
     pilots.sort(key=lambda pilot: pilot.canardos)
@@ -88,26 +90,29 @@ def assign(pilots: list[Pilot], hardwaresCount):
     i = hardwaresCount
     found: bool = False
 
-    while not found and i < len(pilots):
+    while not found and i <= len(pilots):
 
         print("\nRun " + str(i) + " pilotes")
         selected_pilots = pilots[:i]
 
         run = Run()
         run.buildCombinations(selected_pilots)
+        print("End buildCombinations / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
         for j in range(0, run.combinationsCount()):
             combination = run.at(j)
             combination.evaluate()
-            print(combination.toStr(True) + " -> ", str(combination.evaluation))
+            #       print(combination.toStr(True) + " -> ", str(combination.evaluation))
 
             if bestCombination is None or combination.evaluation > bestCombination.evaluation:
                 bestCombination = combination
                 found = bestCombination.evaluation == hardwaresCount
+
         i += 1
+        print("End Evaluation / " + str(i) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
     print("\nBest combination:")
-    print(bestCombination.toStr(False) + " -> " + str(bestCombination.evaluation))
+    print(bestCombination.toStr(False) + " -> " + str(bestCombination.evaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
 
 def load_data(filename: str):
@@ -134,7 +139,7 @@ def load_data(filename: str):
 
 
 def main():
-    pilots, hardwares = load_data(r"test1.txt")
+    pilots, hardwares = load_data(r"test4.txt")
     assign(pilots, len(hardwares))
 
 
