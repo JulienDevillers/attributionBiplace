@@ -97,7 +97,7 @@ def assign(pilots: list[Pilot], hardwaresCount):
 
         run = Run()
         run.buildCombinations(selected_pilots)
-        print("End buildCombinations / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+      #  print("End buildCombinations / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
         for j in range(0, run.combinationsCount()):
             combination = run.at(j)
@@ -109,7 +109,7 @@ def assign(pilots: list[Pilot], hardwaresCount):
                 found = bestCombination.evaluation == hardwaresCount
 
         i += 1
-        print("End Evaluation / " + str(i) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+     #   print("End Evaluation / " + str(i) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
 
     print("\nBest combination:")
     print(bestCombination.toStr(False) + " -> " + str(bestCombination.evaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
@@ -139,7 +139,7 @@ def load_data(filename: str):
 
 
 def main():
-    pilots, hardwares = load_data(r"test4.txt")
+    pilots, hardwares = load_data(r"test1.txt")
     assign(pilots, len(hardwares))
 
 
