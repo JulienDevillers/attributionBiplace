@@ -45,7 +45,7 @@ class Run:
                 pilot.index = 0
                 overrun = True
             result[i] = pilot.requests[pilot.index]
-            if overrun != True:
+            if not overrun:
                 return True
         return False
 
