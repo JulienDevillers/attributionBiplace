@@ -88,8 +88,8 @@ function buildAttributionData(pilots) {
     let solvingMatrix = [];
     const devices = new Map();
 
-    let weight = 1;
-    let weightIncrement = pilots.length * pilots.length;
+    let weight = 0;
+    let weightIncrement = Math.pow(pilots.length, pilots.length);
 
     pilots.sort((a, b) => a.points - b.points);
 
@@ -104,7 +104,7 @@ function buildAttributionData(pilots) {
             wishes[biplace_id] = weight;
             weight += weightIncrement;
         });
-        weightIncrement -= pilots.length;
+        weightIncrement = weightIncrement / pilots.length;
         solvingMatrix.push(wishes);
     });
 
@@ -206,5 +206,5 @@ function run(filename) {
 
 
 
-run('../../tests/test5.txt');
+run('../../tests/test7.txt');
 
