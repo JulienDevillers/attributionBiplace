@@ -104,10 +104,11 @@ function buildAttributionData(pilots) {
         for (let j = 0; j < Math.max(devices.size, pilots.length); j++) {   // On carrétise la matrice si le nombre de pilotes et supérieur au nombre de biplaces
             if (solvingMatrix[i][j] === undefined) {                        // On affecte un poids plus élevé aux biplaces non souhaités
                 solvingMatrix[i][j] = weight;
-          //      weight++;
+                //      weight++;
             }
         }
     }
+    
     for (let i = pilots.length; i < Math.max(devices.size, pilots.length); i++) { // On ajoute des lignes fictives pour finir la carrétisation de la matrice si le nombre de biplaces est supérieur au nombre de pilotes
         solvingMatrix.push([]);
         for (let j = 0; j < Math.max(devices.size, pilots.length); j++) {
@@ -117,17 +118,40 @@ function buildAttributionData(pilots) {
     console.log("SolvingMatrix : ")
     console.log(solvingMatrix);
 
-    let result = { biplaceIds: [], solvingMatrix: solvingMatrix };
+    let result = { biplaceIds: [], pilots: [], solvingMatrix: solvingMatrix };
 
     devices.forEach(function (value, key) {
         result.biplaceIds[value] = key;
     });
 
-    // renvoyer les pilotes dans l'ordre du calcul
-
+    pilots.forEach(function (value) {
+        result.pilots.push(value);
+    });
     console.log("Biplace Ids : ")
     console.log(result.biplaceIds);
+    console.log("Pilots : ")
+    console.log(result.pilots);
 
+    return result;
+}
+
+
+function compute(matrix) {
+    const computeMunkres = require('./munkres');
+    const { Munkres } = computeMunkres;
+    const munkres = new Munkres();
+    return munkres.compute(matrix);
+}
+
+
+function buildResults(computeresult, pilots, biplaceIds) {
+    let result = [];
+    computeresult.forEach(function (item) {
+        if (item[1] > biplaceIds.length)
+            result.push([pilots[item[0]].name, undefined]);
+        else
+            result.push([pilots[item[0]].name, biplaceIds[item[1]]]);
+    });
     return result;
 }
 
@@ -135,135 +159,16 @@ function buildAttributionData(pilots) {
 function run(filename) {
     pilots = loadInputDataFromFile(filename);
     attributionData = buildAttributionData(pilots);
+    computeresult = compute(attributionData.solvingMatrix);
+    finalResults = buildResults(computeresult, attributionData.pilots, attributionData.biplaceIds)
 
-    const computeMunkres = require('./munkres');
-    const { Munkres } = computeMunkres;
-    const munkres = new Munkres();
-    const result2 = munkres.compute(attributionData.solvingMatrix);
-
-    console.log('Assignment:', result2);
-
-
+    console.log('Assignment:', finalResults);
+    finalResults.forEach(function (item) {
+        console.log("[" + item[0] + " -> " + item[1] + "]")
+    });
 }
-
-
-
 
 
 
 run('../tests/test1.txt');
 
-
-
-let possibles = [
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-    [1, 2, 3, 4, 5, 6, 7, 8],
-]
-/*
-let solution = []
- 
-    var initialState = Math.random() * 16;
-    var result = simulatedAnnealing({
-        initialState: initialState,
-        tempMax: 15,
-        tempMin: 0.001,
-        newState: newState,
-        getTemp: getTemp,
-        getEnergy: getEnergy,
-    });
-*/
-
-
-const computeMunkres = require('./munkres');
-
-// Option 1: Use the static helper function
-/*const costMatrix = [
-  [11,12,13, 999, 999, 999],
-  [21,999,999,999,999,999],
-  [999,21,22,999,999,999],
-  [31,32,999,33,999,999],
-  [31,32,999,33, 999,999],
-  [999,999,999,43, 999,999],
- 
-];
-*/
-/*
-A	1	I	J	K
-B	2	I
-C	2 	J	K
-E	3	I	J	L
-F	3	I	J	M
-D	4	K
-*/
-/*
-const costMatrix = [
-    [11, 999, 999, 999, 999, 999],
-    [21, 999, 999, 999, 999, 999],
-    [999, 21, 22, 999, 999, 999],
-    [31, 32, 999, 33, 999, 999],
-    [31, 32, 999, 33, 999, 999],
-    [999, 999, 999, 43, 999, 999],
-];
-*/
-/*
-A	1	I
-B	2	I
-C	2 	J	K
-E	3	I	J	L
-F	3	I	J	M
-D	4	K
-*/
-
-/*const costMatrix = [
-    [11, 12, 13, 14, 15, 16, 17, 18, 19],
-    [21, 22, 23, 24, 25, 26, 27, 28, 29],
-    [31, 32, 33, 34, 35, 36, 37, 38, 39],
-    [41, 42, 43, 44, 45, 46, 47, 48, 49],
-    [51, 52, 53, 54, 55, 56, 57, 58, 59],
-    [61, 62, 63, 64, 65, 66, 67, 68, 69],
-    [71, 72, 73, 74, 75, 76, 77, 78, 79],
-    [81, 82, 83, 84, 85, 86, 87, 88, 89],
-    [91,92, 93, 94, 95, 96, 97, 98, 99],
-    ];
-*/
-
-var costMatrix = [
-    [11, 12, 13, 14, 999],
-    [121, 122, 123, 124, 999],
-    [231, 232, 233, 234, 999],
-    [341, 342, 343, 344, 999],
-    [999, 999, 999, 999, 9999]
-];
-
-for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 5; j++) {
-        costMatrix[j][i] = i * (5 - j) + j * 100;
-    }
-}
-
-var s = costMatrix.map(function (ind) {
-    return ['[', ind.join(','), ']'].join('');
-}).join('\r\n');
-console.log(s);
-const result = computeMunkres(costMatrix);
-
-console.log('Assignment:', result);
-
-s = result.map(function (ind) {
-    return ['[', ind.join(','), ']'].join('');
-}).join(', ');
-
-console.log('Assignment:', s);
-
-
-// Option 2: Use the Munkres class directly
-const { Munkres } = computeMunkres;
-const munkres = new Munkres();
-const result2 = munkres.compute(costMatrix);
-//console.log('Assignment (class):', result2);
