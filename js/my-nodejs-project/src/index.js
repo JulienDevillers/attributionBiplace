@@ -206,5 +206,5 @@ function run(filename) {
 
 
 
-run('../../tests/test7.txt');
+run('../../tests/test8.txt');
 
