@@ -1,3 +1,9 @@
+import  munkres from "munkres";
+import * as fs from "fs";
+
+import * as munkres2 from "./munkres2.js";
+
+
 //var simulatedAnnealing = require('../');
 //var munkres = require('munkres');
 
@@ -42,12 +48,13 @@ describe("Simulated Annealing at x^2 = 16", function () {
 function loadInputDataFromFile(filename) {
     let pilots = []
 
-    array_ = require('fs').readFileSync(filename, 'utf-8').split(/\r?\n/).forEach(function (line, index) {
+    let array_ = fs.readFileSync(filename, 'utf-8').split(/\r?\n/).forEach(function (line, index) {
 
         if (index != 0) {
             if (line.trim() != "") {    // raison inconnuie, le parser renvoie une ligne vide à la fin
-                console.log("-" + line + "-");
-                first_column = true;
+                let s = "-" + line + "-";
+                console.log(s);
+                let first_column = true;
                 let pilot = { wishes: [] };
 
                 line.split('\t').forEach(function (item, index) {
@@ -78,16 +85,16 @@ function loadInputDataFromFile(filename) {
 function buildAttributionData(pilots) {
 
     let solvingMatrix = [];
-    devices = new Map();
+    const devices = new Map();
 
-    weight = 1;
+    let weight = 1;
 
     pilots.sort((a, b) => a.points - b.points);
 
     pilots.forEach(function (pilot) {
         let wishes = [];
         pilot.wishes.forEach(function (biplace) {
-            biplace_id = devices.get(biplace);
+            let biplace_id = devices.get(biplace);
             if (biplace_id === undefined) {
                 biplace_id = devices.size;
                 devices.set(biplace, biplace_id);
@@ -95,6 +102,7 @@ function buildAttributionData(pilots) {
             wishes[biplace_id] = weight;
             weight++;
         });
+        // weight = weight * (pilots.length+1);
         solvingMatrix.push(wishes);
     });
 
@@ -108,7 +116,7 @@ function buildAttributionData(pilots) {
             }
         }
     }
-    
+
     for (let i = pilots.length; i < Math.max(devices.size, pilots.length); i++) { // On ajoute des lignes fictives pour finir la carrétisation de la matrice si le nombre de biplaces est supérieur au nombre de pilotes
         solvingMatrix.push([]);
         for (let j = 0; j < Math.max(devices.size, pilots.length); j++) {
@@ -137,10 +145,19 @@ function buildAttributionData(pilots) {
 
 
 function compute(matrix) {
-    const computeMunkres = require('./munkres');
-    const { Munkres } = computeMunkres;
-    const munkres = new Munkres();
-    return munkres.compute(matrix);
+//    const computeMunkres = require('./munkres2.js');
+    // const { Munkres } = munkres2.Munkres;
+    const munkres_ = new munkres2.Munkres();
+    return munkres_.compute(matrix);
+}
+
+
+
+
+function compute2(matrix) {
+    const assignments = munkres(matrix);
+    const result =  munkres(matrix);
+    return result;
 }
 
 
@@ -155,20 +172,43 @@ function buildResults(computeresult, pilots, biplaceIds) {
     return result;
 }
 
+function finalResultToStr(finalResults) {
+    let result = "";
+    finalResults.forEach(function (item) {
+        result += "[" + item[0] + " -> " + item[1] + "]\n";
+    });
+
+    return result;
+}
+
+function solvingMatrixToStr(solvingMatrix) {
+    let result = "";
+    solvingMatrix.forEach(function (item) {
+        result += "[";
+        item.forEach(function (item2) {
+            result += item2.toString() + ", ";
+        });
+        result += "]\n"
+    });
+
+    return result;
+}
+
 
 function run(filename) {
-    pilots = loadInputDataFromFile(filename);
-    attributionData = buildAttributionData(pilots);
-    computeresult = compute(attributionData.solvingMatrix);
-    finalResults = buildResults(computeresult, attributionData.pilots, attributionData.biplaceIds)
+    const pilots = loadInputDataFromFile(filename);
+    const attributionData = buildAttributionData(pilots);
+    const computeresult = compute(attributionData.solvingMatrix);
+    const finalResults = buildResults(computeresult, attributionData.pilots, attributionData.biplaceIds)
+
+    console.log('solvingMatrix:');
+    console.log(solvingMatrixToStr(attributionData.solvingMatrix));
 
     console.log('Assignment:', finalResults);
-    finalResults.forEach(function (item) {
-        console.log("[" + item[0] + " -> " + item[1] + "]")
-    });
+    console.log(finalResultToStr(finalResults));
 }
 
 
 
-run('../tests/test1.txt');
+run('../tests/test5.txt');
 
