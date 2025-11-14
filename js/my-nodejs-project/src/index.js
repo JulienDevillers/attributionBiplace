@@ -1,7 +1,8 @@
-import  munkres from "munkres";
+import munkres from "munkres";
 import * as fs from "fs";
+import computeMunkres from "./munkres2.js";
 
-import * as munkres2 from "./munkres2.js";
+// munkres2 from "./munkres2.js";
 
 
 //var simulatedAnnealing = require('../');
@@ -51,7 +52,7 @@ function loadInputDataFromFile(filename) {
     let array_ = fs.readFileSync(filename, 'utf-8').split(/\r?\n/).forEach(function (line, index) {
 
         if (index != 0) {
-            if (line.trim() != "") {    // raison inconnuie, le parser renvoie une ligne vide à la fin
+            if (line.trim() != "") {    // raison inconnue, le parser renvoie une ligne vide à la fin
                 let s = "-" + line + "-";
                 console.log(s);
                 let first_column = true;
@@ -88,6 +89,7 @@ function buildAttributionData(pilots) {
     const devices = new Map();
 
     let weight = 1;
+    let weightIncrement = pilots.length * pilots.length;
 
     pilots.sort((a, b) => a.points - b.points);
 
@@ -100,9 +102,9 @@ function buildAttributionData(pilots) {
                 devices.set(biplace, biplace_id);
             }
             wishes[biplace_id] = weight;
-            weight++;
+            weight += weightIncrement;
         });
-        // weight = weight * (pilots.length+1);
+        weightIncrement -= pilots.length;
         solvingMatrix.push(wishes);
     });
 
@@ -144,19 +146,13 @@ function buildAttributionData(pilots) {
 }
 
 
-function compute(matrix) {
-//    const computeMunkres = require('./munkres2.js');
-    // const { Munkres } = munkres2.Munkres;
-    const munkres_ = new munkres2.Munkres();
-    return munkres_.compute(matrix);
+function compute2(matrix) {
+    return computeMunkres(matrix);
 }
 
 
-
-
-function compute2(matrix) {
-    const assignments = munkres(matrix);
-    const result =  munkres(matrix);
+function compute(matrix) {
+    const result = munkres(matrix);
     return result;
 }
 
@@ -198,7 +194,7 @@ function solvingMatrixToStr(solvingMatrix) {
 function run(filename) {
     const pilots = loadInputDataFromFile(filename);
     const attributionData = buildAttributionData(pilots);
-    const computeresult = compute(attributionData.solvingMatrix);
+    const computeresult = compute2(attributionData.solvingMatrix);
     const finalResults = buildResults(computeresult, attributionData.pilots, attributionData.biplaceIds)
 
     console.log('solvingMatrix:');
@@ -210,5 +206,5 @@ function run(filename) {
 
 
 
-run('../tests/test5.txt');
+run('../../tests/test5.txt');
 

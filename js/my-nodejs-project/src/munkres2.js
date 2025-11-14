@@ -695,7 +695,7 @@ function format_matrix(matrix) {
 // Exports
 // ---------------------------------------------------------------------------
 
-function computeMunkres(cost_matrix, options) {
+ function computeMunkres(cost_matrix, options) {
   var m = new Munkres();
   return m.compute(cost_matrix, options);
 }
@@ -708,3 +708,6 @@ computeMunkres.Munkres = Munkres; // backwards compatibility
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = computeMunkres;
 }
+
+
+export default computeMunkres
