@@ -39,7 +39,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
     let weightIncrement: number = Math.pow(pilots.length, pilots.length);
 
     // sort pilots so higher-point pilots get priority (descending)
-    pilots.sort((a, b) => b.points - a.points);
+    pilots.sort((a, b) => a.points - b.points);
 
     //--- compute optimization weights and tandem list.
     pilots.forEach((pilot: Pilot) => {
