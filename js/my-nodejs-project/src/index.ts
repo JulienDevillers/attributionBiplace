@@ -8,7 +8,7 @@ interface Pilot {
     wishes: string[];
 }
 
-interface AttributionData {
+interface AssignmentData {
     tandemIds: (string | undefined)[];
     pilots: Pilot[];
     solvingMatrix: number[][];
@@ -61,7 +61,7 @@ function loadPilotArayFromFile(filename: string): Pilot[] {
  * @param the array of Pilot
  * @return the data from optimization and solution building
  */
-function buildAttributionData(pilots: Pilot[]): AttributionData {
+function buildAssignmentData(pilots: Pilot[]): AssignmentData {
     const solvingMatrix: number[][] = [];
     const allTandems = new Map<string, number>();
 
@@ -93,8 +93,8 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
     console.log("device size :" + allTandems.size);
 
     //--- square the matrix part 1: assign weigths for incompatible assignations.
-    const maxDim:number = Math.max(allTandems.size, pilots.length);
-    const incompatibleWeight:number = weight;
+    const maxDim: number = Math.max(allTandems.size, pilots.length);
+    const incompatibleWeight: number = weight;
 
     for (let i = 0; i < pilots.length; i++) {
         for (let j = 0; j < maxDim; j++) {
@@ -115,7 +115,7 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
     console.log("SolvingMatrix : ");
     console.log(solvingMatrix);
 
-    const result: AttributionData = {
+    const result: AssignmentData = {
         tandemIds: [],
         pilots: [],
         solvingMatrix: solvingMatrix,
@@ -153,29 +153,29 @@ function compute1(matrix: number[][]): number[][] {
 }
 
 interface AssignmentResult {
-    pilot: string;
+    pilotName: string;
     tandemName: string | undefined;
 }
 
 /*
- * Build final result based of munkers matrix and attributionData
+ * Build final result based of munkers matrix and assignmentData
  * @param The result matrix
- * @param The attribution data
+ * @param The assignmentData data
  * @result real life assignement
  */
 function buildResults(
     resultMatrix: number[][],
-    attributionData: AttributionData
+    assignmentData: AssignmentData
 ): AssignmentResult[] {
     const result: AssignmentResult[] = [];
 
     resultMatrix.forEach((item: number[]) => {
         let assignmentResult: AssignmentResult = {
-            pilot: attributionData.pilots[item[0]].name || "",
+            pilotName: assignmentData.pilots[item[0]].name || "",
             tandemName: undefined
         };
-        if (item[1] <= attributionData.tandemIds.length) {
-            assignmentResult.tandemName = attributionData.tandemIds[item[1]];
+        if (item[1] <= assignmentData.tandemIds.length) {
+            assignmentResult.tandemName = assignmentData.tandemIds[item[1]];
         }
         result.push(assignmentResult);
     });
@@ -184,10 +184,10 @@ function buildResults(
 }
 
 function finalResultToStr(finalResults: AssignmentResult[]): string {
-    let result:string = "";
+    let result: string = "";
 
     finalResults.forEach((item: AssignmentResult) => {
-        result += "[" + item.pilot + " -> " + item.tandemName + "]\n";
+        result += "[" + item.pilotName + " -> " + item.tandemName + "]\n";
     });
 
     return result;
@@ -207,31 +207,47 @@ function solvingMatrixToStr(solvingMatrix: number[][]): string {
     return result;
 }
 
-function solutionCost(resultMatrix: number[][],): number {
-    return 0;
+function solutionCost(assignmentResults: AssignmentResult[], assignmentData: AssignmentData): number {
+    let result: number = 0;
+
+    assignmentResults.forEach(function (assignmentResult: AssignmentResult) {
+        let pilotIndex: number = 0;
+        assignmentData.pilots.forEach(function (pilot: Pilot, index: number) {
+            if (pilot.name === assignmentResult.pilotName)
+                pilotIndex = index;
+        });
+        let tandemIndex: number = assignmentData.tandemIds.indexOf(assignmentResult.tandemName);
+        if (tandemIndex !== -1) {
+            result += assignmentData.solvingMatrix[pilotIndex][tandemIndex];
+        } else {
+
+        }
+        assignmentResult.pilotName
+    });
+    return result;
 }
 
 /*
- * Attribute tandem to pilots
+ * Assign tandem to pilots
  * @param Pilots and their wishes, tandem list is built from pilots wishes. 
  */
-function attritubeTandemToPilots(pilots: Pilot[]): AssignmentResult[] {
-    const attributionData: AttributionData = buildAttributionData(pilots);
-    const resultMatrix: number[][] = compute1(attributionData.solvingMatrix);
-    const finalResults: AssignmentResult[] = buildResults(resultMatrix, attributionData);
+function assignTandemToPilots(pilots: Pilot[]): AssignmentResult[] {
+    const assignmentData: AssignmentData = buildAssignmentData(pilots);
+    const resultMatrix: number[][] = compute1(assignmentData.solvingMatrix);
+    const finalResults: AssignmentResult[] = buildResults(resultMatrix, assignmentData);
 
     console.log("solvingMatrix:");
-    console.log(solvingMatrixToStr(attributionData.solvingMatrix));
+    console.log(solvingMatrixToStr(assignmentData.solvingMatrix));
 
     console.log("Assignment:", finalResults);
     console.log(finalResultToStr(finalResults));
-
+    console.log("Cost: " + solutionCost(finalResults, assignmentData))
     return finalResults;
 }
 
-function attributeTandemToPilotsFromTestFile(filename: string): void {
+function assignTandemToPilotsFromTestFile(filename: string): void {
     const pilots: Pilot[] = loadPilotArayFromFile(filename);
-    attritubeTandemToPilots(pilots);
+    assignTandemToPilots(pilots);
 }
 
-attributeTandemToPilotsFromTestFile("../../tests/test7.txt");
+assignTandemToPilotsFromTestFile("../../tests/test7.txt");
