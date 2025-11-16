@@ -63,7 +63,7 @@ function loadPilotArayFromFile(filename: string): Pilot[] {
  */
 function buildAttributionData(pilots: Pilot[]): AttributionData {
     const solvingMatrix: number[][] = [];
-    const devices = new Map<string, number>();
+    const allTandems = new Map<string, number>();
 
     let weight: number = 0;
     let weightIncrement: number = Math.pow(pilots.length, pilots.length);
@@ -75,11 +75,11 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
         const wishes: number[] = [];
 
         pilot.wishes.forEach((tandemName: string) => {
-            let tandemIndex = devices.get(tandemName);
 
+            let tandemIndex = allTandems.get(tandemName);
             if (tandemIndex === undefined) {
-                tandemIndex = devices.size;
-                devices.set(tandemName, tandemIndex);
+                tandemIndex = allTandems.size;
+                allTandems.set(tandemName, tandemIndex);
             }
 
             wishes[tandemIndex] = weight;
@@ -90,11 +90,11 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
         solvingMatrix.push(wishes);
     });
 
-    console.log("device size :" + devices.size);
+    console.log("device size :" + allTandems.size);
 
     //--- square the matrix part 1: assign weigths for incompatible assignations.
-    const maxDim = Math.max(devices.size, pilots.length);
-    const incompatibleWeight = weight;
+    const maxDim:number = Math.max(allTandems.size, pilots.length);
+    const incompatibleWeight:number = weight;
 
     for (let i = 0; i < pilots.length; i++) {
         for (let j = 0; j < maxDim; j++) {
@@ -121,8 +121,8 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
         solvingMatrix: solvingMatrix,
     };
 
-    devices.forEach((value: number, key: string) => {
-        result.tandemIds[value] = key;
+    allTandems.forEach((index: number, tandemName: string) => {
+        result.tandemIds[index] = tandemName;
     });
 
     pilots.forEach((value: Pilot) => {
@@ -184,7 +184,7 @@ function buildResults(
 }
 
 function finalResultToStr(finalResults: AssignmentResult[]): string {
-    let result = "";
+    let result:string = "";
 
     finalResults.forEach((item: AssignmentResult) => {
         result += "[" + item.pilot + " -> " + item.tandemName + "]\n";
@@ -194,7 +194,7 @@ function finalResultToStr(finalResults: AssignmentResult[]): string {
 }
 
 function solvingMatrixToStr(solvingMatrix: number[][]): string {
-    let result = "";
+    let result: string = "";
 
     solvingMatrix.forEach((item: number[]) => {
         result += "[";
@@ -207,14 +207,18 @@ function solvingMatrixToStr(solvingMatrix: number[][]): string {
     return result;
 }
 
+function solutionCost(resultMatrix: number[][],): number {
+    return 0;
+}
+
 /*
  * Attribute tandem to pilots
  * @param Pilots and their wishes, tandem list is built from pilots wishes. 
  */
 function attritubeTandemToPilots(pilots: Pilot[]): AssignmentResult[] {
-    const attributionData = buildAttributionData(pilots);
-    const resultMatrix = compute1(attributionData.solvingMatrix);
-    const finalResults = buildResults(resultMatrix, attributionData);
+    const attributionData: AttributionData = buildAttributionData(pilots);
+    const resultMatrix: number[][] = compute1(attributionData.solvingMatrix);
+    const finalResults: AssignmentResult[] = buildResults(resultMatrix, attributionData);
 
     console.log("solvingMatrix:");
     console.log(solvingMatrixToStr(attributionData.solvingMatrix));
@@ -226,7 +230,7 @@ function attritubeTandemToPilots(pilots: Pilot[]): AssignmentResult[] {
 }
 
 function attributeTandemToPilotsFromTestFile(filename: string): void {
-    const pilots = loadPilotArayFromFile(filename);
+    const pilots: Pilot[] = loadPilotArayFromFile(filename);
     attritubeTandemToPilots(pilots);
 }
 
