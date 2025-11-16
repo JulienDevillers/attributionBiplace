@@ -283,7 +283,7 @@ function assignTandemToPilotsFromTestFile(filename: string): AssignmentResult {
 }
 
 
-const filename: string = "../../tests/test8.txt";
+const filename: string = "../../tests/test5.txt";
 const assignmentResult: AssignmentResult = assignTandemToPilotsFromTestFile(filename);
 const computedSolutionCost = solutionCost(assignmentResult);
 console.log("Computed solution cost: " + computedSolutionCost);
