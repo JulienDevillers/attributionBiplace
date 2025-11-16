@@ -9,7 +9,7 @@ interface Pilot {
 }
 
 interface AttributionData {
-    biplaceIds: (string | undefined)[];
+    tandemIds: (string | undefined)[];
     pilots: Pilot[];
     solvingMatrix: number[][];
 }
@@ -74,15 +74,15 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
     pilots.forEach((pilot: Pilot) => {
         const wishes: number[] = [];
 
-        pilot.wishes.forEach((biplace: string) => {
-            let biplace_id = devices.get(biplace);
+        pilot.wishes.forEach((tandemName: string) => {
+            let tandemIndex = devices.get(tandemName);
 
-            if (biplace_id === undefined) {
-                biplace_id = devices.size;
-                devices.set(biplace, biplace_id);
+            if (tandemIndex === undefined) {
+                tandemIndex = devices.size;
+                devices.set(tandemName, tandemIndex);
             }
 
-            wishes[biplace_id] = weight;
+            wishes[tandemIndex] = weight;
             weight += weightIncrement;
         });
 
@@ -116,21 +116,21 @@ function buildAttributionData(pilots: Pilot[]): AttributionData {
     console.log(solvingMatrix);
 
     const result: AttributionData = {
-        biplaceIds: [],
+        tandemIds: [],
         pilots: [],
         solvingMatrix: solvingMatrix,
     };
 
     devices.forEach((value: number, key: string) => {
-        result.biplaceIds[value] = key;
+        result.tandemIds[value] = key;
     });
 
     pilots.forEach((value: Pilot) => {
         result.pilots.push(value);
     });
 
-    console.log("Biplace Ids : ");
-    console.log(result.biplaceIds);
+    console.log("Tandem Ids : ");
+    console.log(result.tandemIds);
     console.log("Pilots : ");
     console.log(result.pilots);
 
@@ -153,8 +153,8 @@ function compute1(matrix: number[][]): number[][] {
 }
 
 interface AssignmentResult {
-    0: string;
-    1: string | undefined;
+    pilot: string;
+    tandemName: string | undefined;
 }
 
 /*
@@ -170,14 +170,14 @@ function buildResults(
     const result: AssignmentResult[] = [];
 
     resultMatrix.forEach((item: number[]) => {
-        if (item[1] > attributionData.biplaceIds.length) {
-            result.push([attributionData.pilots[item[0]].name || "", undefined]);
-        } else {
-            result.push([
-                attributionData.pilots[item[0]].name || "",
-                attributionData.biplaceIds[item[1]],
-            ]);
+        let assignmentResult: AssignmentResult = {
+            pilot: attributionData.pilots[item[0]].name || "",
+            tandemName: undefined
+        };
+        if (item[1] <= attributionData.tandemIds.length) {
+            assignmentResult.tandemName = attributionData.tandemIds[item[1]];
         }
+        result.push(assignmentResult);
     });
 
     return result;
@@ -187,7 +187,7 @@ function finalResultToStr(finalResults: AssignmentResult[]): string {
     let result = "";
 
     finalResults.forEach((item: AssignmentResult) => {
-        result += "[" + item[0] + " -> " + item[1] + "]\n";
+        result += "[" + item.pilot + " -> " + item.tandemName + "]\n";
     });
 
     return result;
