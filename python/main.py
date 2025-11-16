@@ -132,7 +132,7 @@ def load_data(filename: str):
 
 
 def main():
-    pilots, hardwares = load_data(r"test1.txt")
+    pilots, hardwares = load_data(r"../tests/testJPDS.txt")
     assign(pilots, len(hardwares))
 
 

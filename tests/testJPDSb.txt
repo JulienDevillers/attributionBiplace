@@ -1,7 +1,7 @@
 Pilote	priorité	request_1	request_2	request_3	request_4	request_5	request_6
-A	1	I	J	K
-B	2	I
-C	3 	J	K
-E	4	I	J	L
-F	5	I	J	M
-D	6	K
+D	K
+E	L
+F	M
+B	I
+C	J
+A	
