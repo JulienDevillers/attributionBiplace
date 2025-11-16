@@ -283,7 +283,7 @@ function assignTandemToPilotsFromTestFile(filename: string): AssignmentResult {
 }
 
 
-const filename: string = "../../tests/test7.txt";
+const filename: string = "../../tests/test8.txt";
 const assignmentResult: AssignmentResult = assignTandemToPilotsFromTestFile(filename);
 const computedSolutionCost = solutionCost(assignmentResult);
 console.log("Computed solution cost: " + computedSolutionCost);
@@ -294,5 +294,5 @@ if (fs.existsSync(bestSolutionFilename)) {
     applySolutionFileToAssignmentResult(bestSolutionFilename, assignmentResult);
     const bestSolutionCost = solutionCost(assignmentResult);
     console.log("Best solution cost: " + bestSolutionCost);
-    console.log("Delta solution cost ( >0 => computed is better ): " + (bestSolutionCost - computedSolutionCost));
+    console.log("Delta solution cost ( <0 => computed is better ): " + (bestSolutionCost - computedSolutionCost));
 }

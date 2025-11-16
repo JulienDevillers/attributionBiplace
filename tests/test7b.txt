@@ -1,6 +1,6 @@
 Pilote	tandem
-A	J
-B	I
+A	I
+B	J
 C	K
 D	L
 E	M
