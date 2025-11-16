@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import munkres from "munkres";
-import computeMunkres from "./munkres2";
+import computeMunkres from "./munkres2.js";
 
 export interface Pilot {
     name?: string;
