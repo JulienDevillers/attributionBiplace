@@ -1,0 +1,14 @@
+Pilote	tandem
+A	J
+B	I
+C	K
+D	L
+E	M
+F	N
+G	O
+H	P
+I	Q
+J	
+K	
+L	
+M	

@@ -14,6 +14,16 @@ interface AssignmentData {
     solvingMatrix: number[][];
 }
 
+interface Assignment {
+    pilotName: string;
+    tandemName: string | undefined;
+}
+
+interface AssignmentResult {
+    assignments: Assignment[];
+    assignmentData: AssignmentData;
+}
+
 /*
  * load test data from a file and it in a Pilot array
  * @param The path of the file
@@ -52,6 +62,30 @@ function loadPilotArayFromFile(filename: string): Pilot[] {
         });
 
     return pilots;
+}
+
+function applySolutionFileToAssignmentResult(filename: string, assignementResult: AssignmentResult): void {
+
+    fs.readFileSync(filename, "utf-8")
+        .split(/\r?\n/)
+        .forEach((line: string, index: number) => {
+            if (index !== 0) {
+                if (line.trim() !== "") {
+                    const fields: string[] = line.split("\t");
+                    const pilotNamem: string = fields[0];
+                    const tandemName: string = fields[1];
+
+                    let assignment: Assignment | undefined = assignementResult.assignments.find(function (assignement: Assignment) {
+                        return assignement.pilotName === pilotNamem;
+                    });
+                    if (tandemName !== "") {
+                        assignment!.tandemName = tandemName;
+                    } else {
+                        assignment!.tandemName = undefined;
+                    }
+                }
+            }
+        });
 }
 
 /*
@@ -151,15 +185,6 @@ function compute1(matrix: number[][]): number[][] {
     const result = munkres(matrix);
     return result;
 }
-interface Assignment {
-    pilotName: string;
-    tandemName: string | undefined;
-}
-
-interface AssignmentResult {
-    assignments: Assignment[];
-    assignmentData: AssignmentData;
-}
 
 /*
  * Build final result based of munkers matrix and assignmentData
@@ -257,5 +282,17 @@ function assignTandemToPilotsFromTestFile(filename: string): AssignmentResult {
     return assignTandemToPilots(pilots);
 }
 
-const assignmentResult: AssignmentResult = assignTandemToPilotsFromTestFile("../../tests/test7.txt");
-console.log("Cost: --" + solutionCost(assignmentResult))
+
+const filename: string = "../../tests/test7.txt";
+const assignmentResult: AssignmentResult = assignTandemToPilotsFromTestFile(filename);
+const computedSolutionCost = solutionCost(assignmentResult);
+console.log("Computed solution cost: " + computedSolutionCost);
+
+const bestSolutionFilename: string = filename.split('.').slice(0, -1).join('.') + "b.txt";
+
+if (fs.existsSync(bestSolutionFilename)) {
+    applySolutionFileToAssignmentResult(bestSolutionFilename, assignmentResult);
+    const bestSolutionCost = solutionCost(assignmentResult);
+    console.log("Best solution cost: " + bestSolutionCost);
+    console.log("Delta solution cost ( >0 => computed is better ): " + (bestSolutionCost - computedSolutionCost));
+}
