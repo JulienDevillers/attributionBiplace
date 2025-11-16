@@ -151,10 +151,14 @@ function compute1(matrix: number[][]): number[][] {
     const result = munkres(matrix);
     return result;
 }
-
-interface AssignmentResult {
+interface Assignment {
     pilotName: string;
     tandemName: string | undefined;
+}
+
+interface AssignmentResult {
+    assignments: Assignment[];
+    assignmentData: AssignmentData;
 }
 
 /*
@@ -166,11 +170,11 @@ interface AssignmentResult {
 function buildResults(
     resultMatrix: number[][],
     assignmentData: AssignmentData
-): AssignmentResult[] {
-    const result: AssignmentResult[] = [];
+): Assignment[] {
+    const result: Assignment[] = [];
 
     resultMatrix.forEach((item: number[]) => {
-        let assignmentResult: AssignmentResult = {
+        let assignmentResult: Assignment = {
             pilotName: assignmentData.pilots[item[0]].name || "",
             tandemName: undefined
         };
@@ -183,10 +187,10 @@ function buildResults(
     return result;
 }
 
-function finalResultToStr(finalResults: AssignmentResult[]): string {
+function finalResultToStr(finalResults: Assignment[]): string {
     let result: string = "";
 
-    finalResults.forEach((item: AssignmentResult) => {
+    finalResults.forEach((item: Assignment) => {
         result += "[" + item.pilotName + " -> " + item.tandemName + "]\n";
     });
 
@@ -207,22 +211,22 @@ function solvingMatrixToStr(solvingMatrix: number[][]): string {
     return result;
 }
 
-function solutionCost(assignmentResults: AssignmentResult[], assignmentData: AssignmentData): number {
+function solutionCost(assignmentResult: AssignmentResult): number {
     let result: number = 0;
 
-    assignmentResults.forEach(function (assignmentResult: AssignmentResult) {
+    const assignmentData: AssignmentData = assignmentResult.assignmentData;
+
+    assignmentResult.assignments.forEach(function (assignment: Assignment) {
         let pilotIndex: number = 0;
-        assignmentData.pilots.forEach(function (pilot: Pilot, index: number) {
-            if (pilot.name === assignmentResult.pilotName)
+        assignmentResult.assignmentData.pilots.forEach(function (pilot: Pilot, index: number) {
+            if (pilot.name === assignment.pilotName)
                 pilotIndex = index;
         });
-        let tandemIndex: number = assignmentData.tandemIds.indexOf(assignmentResult.tandemName);
+        let tandemIndex: number = assignmentData.tandemIds.indexOf(assignment.tandemName);
         if (tandemIndex !== -1) {
             result += assignmentData.solvingMatrix[pilotIndex][tandemIndex];
-        } else {
-
-        }
-        assignmentResult.pilotName
+        } // Warning ne rend que les coûts d'affection, sans les coûts de non affectation
+        //    assignment.pilotName llklk
     });
     return result;
 }
@@ -231,23 +235,27 @@ function solutionCost(assignmentResults: AssignmentResult[], assignmentData: Ass
  * Assign tandem to pilots
  * @param Pilots and their wishes, tandem list is built from pilots wishes. 
  */
-function assignTandemToPilots(pilots: Pilot[]): AssignmentResult[] {
+function assignTandemToPilots(pilots: Pilot[]): AssignmentResult {
     const assignmentData: AssignmentData = buildAssignmentData(pilots);
     const resultMatrix: number[][] = compute1(assignmentData.solvingMatrix);
-    const finalResults: AssignmentResult[] = buildResults(resultMatrix, assignmentData);
+    const assignments: Assignment[] = buildResults(resultMatrix, assignmentData);
 
+    let result: AssignmentResult = {
+        assignmentData: assignmentData,
+        assignments: assignments
+    };
     console.log("solvingMatrix:");
     console.log(solvingMatrixToStr(assignmentData.solvingMatrix));
 
-    console.log("Assignment:", finalResults);
-    console.log(finalResultToStr(finalResults));
-    console.log("Cost: " + solutionCost(finalResults, assignmentData))
-    return finalResults;
+    console.log("Assignment:", assignments);
+    console.log(finalResultToStr(assignments));
+    return result;
 }
 
-function assignTandemToPilotsFromTestFile(filename: string): void {
+function assignTandemToPilotsFromTestFile(filename: string): AssignmentResult {
     const pilots: Pilot[] = loadPilotArayFromFile(filename);
-    assignTandemToPilots(pilots);
+    return assignTandemToPilots(pilots);
 }
 
-assignTandemToPilotsFromTestFile("../../tests/test7.txt");
+const assignmentResult: AssignmentResult = assignTandemToPilotsFromTestFile("../../tests/test7.txt");
+console.log("Cost: --" + solutionCost(assignmentResult))
