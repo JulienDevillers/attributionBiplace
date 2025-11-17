@@ -38,7 +38,7 @@ describe('assignTandemToPilots', () => {
     expect(getAssignmentForPilotName(result.assignments, 'C')!.tandemName).toBe('K');
   });
 
-/*
+
   it('should solve this set', () => {
     const pilots: Pilot[] = [
       { name: 'A', points: 1, wishes: ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R'] },
@@ -68,8 +68,8 @@ describe('assignTandemToPilots', () => {
     expect(getAssignmentForPilotName(result.assignments, 'H')?.tandemName).toBe('P');
     expect(getAssignmentForPilotName(result.assignments, 'I')?.tandemName).toBe('Q');
     expect(getAssignmentForPilotName(result.assignments, 'J')?.tandemName).toBe('R');
-  });*/
-/*
+  });
+
   it('should solve this set', () => {
     const pilots: Pilot[] = [
       { name: 'A', points: 1, wishes: ['I', 'J', 'K'] },
@@ -91,8 +91,8 @@ describe('assignTandemToPilots', () => {
     expect(getAssignmentForPilotName(result.assignments, 'D')?.tandemName).toBe('K');
     expect(getAssignmentForPilotName(result.assignments, 'E')?.tandemName).toBe('L');
     expect(getAssignmentForPilotName(result.assignments, 'F')?.tandemName).toBe('M');
-  });*/
-/*
+  });
+
 it('should solve this set', () => {
     const pilots: Pilot[] = [
       { name: 'D', points: 1, wishes: ['K'] },
@@ -115,8 +115,6 @@ it('should solve this set', () => {
     expect(getAssignmentForPilotName(result.assignments, 'E')?.tandemName).toBe('L');
     expect(getAssignmentForPilotName(result.assignments, 'F')?.tandemName).toBe('M');
   });
-
-*/
 
 });
 
