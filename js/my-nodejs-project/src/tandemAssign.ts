@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import munkres from "munkres";
 
 export interface Pilot {
@@ -117,14 +116,6 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
 }
 
 /*
- * Implementation Nr1 of munkres algorithm
- */
-function compute1(matrix: bigint[][]): number[][] {
-    const result = munkres(matrix);
-    return result;
-}
-
-/*
  * Build final result based of munkers matrix and assignmentData
  * @param The result matrix
  * @param The assignmentData data
@@ -203,7 +194,7 @@ export function solutionCost(assignmentResult: AssignmentResult): bigint {
  */
 export function assignTandemToPilots(pilots: Pilot[]): AssignmentResult {
     const assignmentData: AssignmentData = buildAssignmentData(pilots);
-    const resultMatrix: number[][] = compute1(assignmentData.solvingMatrix);
+    const resultMatrix: number[][] = munkres(assignmentData.solvingMatrix);
     const assignments: Assignment[] = buildResults(resultMatrix, assignmentData);
 
     let result: AssignmentResult = {
