@@ -27,7 +27,7 @@ let incompatibleWeight: bigint = BigInt(0)
 
 /*
  * Based on a Pilot array, build all data that will be used to do the processing
- * algotithm and to build an understandable solution from the result of the previously
+ * algorithm and to build an understandable solution from the result of the previously
  * mentionned algorithm.
  * @param the array of Pilot
  * @return the data from optimization and solution building
@@ -89,14 +89,6 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
             if (solvingMatrix[i][j] === undefined) {
                 solvingMatrix[i][j] = incompatibleWeight;
             }
-        }
-    }
-
-    //--- square the matrix part 2: add fake pilots that will receive unused tandem.
-    for (let i = pilots.length; i < maxDim; i++) {
-        solvingMatrix.push([]);
-        for (let j = 0; j < maxDim; j++) {
-            solvingMatrix[i][j] = incompatibleWeight;
         }
     }
 
