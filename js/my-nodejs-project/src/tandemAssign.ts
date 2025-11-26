@@ -136,14 +136,16 @@ function buildResults(
     const result: Assignment[] = [];
 
     resultMatrix.forEach((item: number[]) => {
-        let assignmentResult: Assignment = {
-            pilotName: assignmentData.pilots[item[0]].name || "",
-            tandemName: undefined
-        };
-        if (item[1] <= assignmentData.tandemIds.length) {
-            assignmentResult.tandemName = assignmentData.tandemIds[item[1]];
+        if (item[0] < assignmentData.pilots.length) {
+            let assignmentResult: Assignment = {
+                pilotName: assignmentData.pilots[item[0]].name || "",
+                tandemName: undefined
+            };
+            if (item[1] <= assignmentData.tandemIds.length) {
+                assignmentResult.tandemName = assignmentData.tandemIds[item[1]];
+            }
+            result.push(assignmentResult);
         }
-        result.push(assignmentResult);
     });
 
     return result;
