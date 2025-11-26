@@ -57,7 +57,49 @@ describe('assignTandemToPilots', () => {
   });
 
 
+
+  it('should solve this set, less tandem than pilot 2', () => {
+    const pilots: Pilot[] = [
+      { name: 'A', points: 1, wishes: ['I', 'J', 'K'] },
+      { name: 'B', points: 2, wishes: ['I', 'J'] },
+      { name: 'C', points: 3, wishes: ['I', 'J'] },
+      { name: 'D', points: 4, wishes: ['I', 'J', 'K'] },
+    ];
+
+    const result = assignTandemToPilots(pilots);
+
+    expect(result).toBeDefined();
+    expect(result.assignments).toBeDefined();
+    expect(result.assignments.length).toBe(4);
+    expect(result.assignmentData).toBeDefined();
+
+    expect(getAssignmentForPilotName(result.assignments, 'A')!.tandemName).toBe('K');
+    expect(getAssignmentForPilotName(result.assignments, 'B')!.tandemName).toBe('I');
+    expect(getAssignmentForPilotName(result.assignments, 'C')!.tandemName).toBe('J');
+    expect(getAssignmentForPilotName(result.assignments, 'D')!.tandemName).toBe(undefined);
+  });
+
+
   it('should solve this set 3', () => {
+    const pilots: Pilot[] = [
+      { name: 'A', points: 1, wishes: ['I', 'J', 'K', 'L', 'N'] },
+      { name: 'B', points: 2, wishes: ['I', 'J', 'K', 'L', 'N'] },
+      { name: 'C', points: 3, wishes: ['I', 'J', 'K', 'L', 'N'] },
+      { name: 'D', points: 4, wishes: ['I', 'J', 'K', 'L'] },
+    ];
+    const result = assignTandemToPilots(pilots);
+
+    expect(result).toBeDefined();
+    expect(result.assignments).toBeDefined();
+    expect(result.assignments.length).toBe(4);
+    expect(result.assignmentData).toBeDefined();
+    expect(getAssignmentForPilotName(result.assignments, 'A')?.tandemName).toBe('I');
+    expect(getAssignmentForPilotName(result.assignments, 'B')?.tandemName).toBe('J');
+    expect(getAssignmentForPilotName(result.assignments, 'C')?.tandemName).toBe('K');
+    expect(getAssignmentForPilotName(result.assignments, 'D')?.tandemName).toBe('L');
+  });
+
+  it('should solve this set 3-2', () => {
     const pilots: Pilot[] = [
       { name: 'A', points: 1, wishes: ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'] },
       { name: 'B', points: 2, wishes: ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'] },
@@ -111,10 +153,10 @@ describe('assignTandemToPilots', () => {
     const pilots: Pilot[] = [
       { name: 'A', points: 1, wishes: ['I', 'J', 'K'] },
       { name: 'B', points: 2, wishes: ['I'] },
+      { name: 'D', points: 4, wishes: ['I', 'J', 'L'] },
       { name: 'C', points: 3, wishes: ['J', 'K'] },
-      { name: 'D', points: 6, wishes: ['K'] },
-      { name: 'E', points: 4, wishes: ['I', 'J', 'L'] },
-      { name: 'F', points: 5, wishes: ['I', 'J', 'M'] },
+      { name: 'E', points: 5, wishes: ['I', 'J', 'M'] },
+      { name: 'F', points: 6, wishes: ['K'] },
     ];
     const result = assignTandemToPilots(pilots);
 
@@ -122,12 +164,12 @@ describe('assignTandemToPilots', () => {
     expect(result.assignments).toBeDefined();
     expect(result.assignments.length).toBe(6);
     expect(result.assignmentData).toBeDefined();
-    expect(getAssignmentForPilotName(result.assignments, 'A')?.tandemName).toBe('I');
-    expect(getAssignmentForPilotName(result.assignments, 'B')?.tandemName).toBe(undefined);
-    expect(getAssignmentForPilotName(result.assignments, 'C')?.tandemName).toBe('J');
-    expect(getAssignmentForPilotName(result.assignments, 'D')?.tandemName).toBe('K');
-    expect(getAssignmentForPilotName(result.assignments, 'E')?.tandemName).toBe('L');
-    expect(getAssignmentForPilotName(result.assignments, 'F')?.tandemName).toBe('M');
+    expect(getAssignmentForPilotName(result.assignments, 'A')?.tandemName).toBe('J');
+    expect(getAssignmentForPilotName(result.assignments, 'B')?.tandemName).toBe('I');
+    expect(getAssignmentForPilotName(result.assignments, 'C')?.tandemName).toBe('K');
+    expect(getAssignmentForPilotName(result.assignments, 'D')?.tandemName).toBe('L');
+    expect(getAssignmentForPilotName(result.assignments, 'E')?.tandemName).toBe('M');
+    expect(getAssignmentForPilotName(result.assignments, 'F')?.tandemName).toBe(undefined);
   });
 
   it('should solve this set 6', () => {
