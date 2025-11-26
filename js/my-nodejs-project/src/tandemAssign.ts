@@ -44,7 +44,22 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
     // sort pilots so higher-point pilots get priority (descending)
     pilots.sort((a, b) => a.points - b.points);
 
+    weightIncrement = BigInt(1);
+    let sum: bigint = BigInt(0);
+    let increments: bigint[] = [];
+
     //--- compute optimization weights and tandem list.
+    pilots.slice().reverse().forEach((pilot: Pilot) => {
+        increments.unshift(weightIncrement);
+        weightIncrement = weightIncrement
+            * BigInt(pilot.wishes.length) * BigInt(pilot.wishes.length + 1) / BigInt(2)  // somme des incréments de la ligne ( somme de 1x + 2x + 3x...)
+            + BigInt(1);
+    });
+
+    console.log("increments: %O",increments);
+
+    let i = 0;
+    let sum_line: bigint = BigInt(0);
     pilots.forEach((pilot: Pilot) => {
         const wishes: bigint[] = [];
 
@@ -56,13 +71,17 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
                 allTandems.set(tandemName, tandemIndex);
             }
 
-            wishes[tandemIndex] = weight;
-            weight += weightIncrement;
+            wishes[tandemIndex] = weight + sum_line;
+            sum += wishes[tandemIndex];
+            weight += increments[i];
         });
-
-        weightIncrement = weightIncrement / BigInt(pow_factor);
+        sum_line += sum;
+        i++;
+        weightIncrement += sum + BigInt(1);
+        weight++;
         solvingMatrix.push(wishes);
     });
+    incompatibleWeight = sum + BigInt(1);  // plutôt que prendre la somme, prendre la sum des max par ligne ?
 
     console.log("device size :" + allTandems.size);
 
@@ -102,9 +121,8 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
         result.pilots.push(value);
     });
 
-    console.log("Tandem Ids : ");
-    console.log(result.tandemIds);
-    console.log("Pilots : ");
+    console.log("Tandem Ids : %O", result.tandemIds);
+    console.log("Pilots :");
     console.log(result.pilots);
 
     return result;
