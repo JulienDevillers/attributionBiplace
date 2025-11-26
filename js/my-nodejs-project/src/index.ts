@@ -5,11 +5,8 @@ import {
     Pilot,
     AssignmentResult,
     Assignment
-} from './tandemAssign.js';
-//import type [Ass{ type } from "os";
-//import Pilot from 'tandemAssign.ts';
+} from './tandemAssign.js';;
 
-//import { assignTandemToPilots, assignTandemToPilotsFromTestFile } from './tandemAssign';
 
 /*
  * load test data from a file and it in a Pilot array
