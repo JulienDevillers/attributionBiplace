@@ -11,7 +11,7 @@ export interface Pilot {
 interface AssignmentData {
     tandemIds: (string | undefined)[];
     pilots: Pilot[];
-    solvingMatrix: number[][];
+    solvingMatrix: bigint[][];
 }
 
 export interface Assignment {
@@ -24,7 +24,7 @@ export interface AssignmentResult {
     assignmentData: AssignmentData;
 }
 
-let incompatibleWeight: number = 0
+let incompatibleWeight: bigint = BigInt(0)
 
 /*
  * Based on a Pilot array, build all data that will be used to do the processing
@@ -34,18 +34,20 @@ let incompatibleWeight: number = 0
  * @return the data from optimization and solution building
  */
 function buildAssignmentData(pilots: Pilot[]): AssignmentData {
-    const solvingMatrix: number[][] = [];
+    const solvingMatrix: bigint[][] = [];
     const allTandems = new Map<string, number>();
 
-    let weight: number = 0;
-    let weightIncrement: number = Math.pow(pilots.length, pilots.length);
+    let weight: bigint = BigInt(0);
+    const pow_factor: bigint = BigInt(Math.max(pilots.length, allTandems.size))
+    let weightIncrement: bigint = pow_factor ** (pow_factor - BigInt(1));
+    incompatibleWeight = pow_factor ** (pow_factor + BigInt(1));
 
     // sort pilots so higher-point pilots get priority (descending)
     pilots.sort((a, b) => a.points - b.points);
 
     //--- compute optimization weights and tandem list.
     pilots.forEach((pilot: Pilot) => {
-        const wishes: number[] = [];
+        const wishes: bigint[] = [];
 
         pilot.wishes.forEach((tandemName: string) => {
 
@@ -59,7 +61,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
             weight += weightIncrement;
         });
 
-        weightIncrement = weightIncrement / pilots.length;
+        weightIncrement = weightIncrement / BigInt(pow_factor);
         solvingMatrix.push(wishes);
     });
 
@@ -67,8 +69,6 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
 
     //--- square the matrix part 1: assign weigths for incompatible assignations.
     const maxDim: number = Math.max(allTandems.size, pilots.length);
-    const pow_factor = Math.max(pilots.length, allTandems.size)
-    incompatibleWeight = Math.pow(pow_factor, pow_factor + 1);
 
     for (let i = 0; i < pilots.length; i++) {
         for (let j = 0; j < maxDim; j++) {
@@ -121,7 +121,7 @@ function compute2(matrix: number[][]): number[][] {
 /*
  * Implementation Nr1 of munkres algorithm
  */
-function compute1(matrix: number[][]): number[][] {
+function compute1(matrix: bigint[][]): number[][] {
     const result = munkres(matrix);
     return result;
 }
@@ -164,12 +164,12 @@ function finalResultToStr(finalResults: Assignment[]): string {
     return result;
 }
 
-function solvingMatrixToStr(solvingMatrix: number[][]): string {
+function solvingMatrixToStr(solvingMatrix: bigint[][]): string {
     let result: string = "";
 
-    solvingMatrix.forEach((item: number[]) => {
+    solvingMatrix.forEach((item: bigint[]) => {
         result += "[";
-        item.forEach((item2: number) => {
+        item.forEach((item2: bigint) => {
             result += item2.toString() + ", ";
         });
         result += "]\n";
@@ -178,8 +178,8 @@ function solvingMatrixToStr(solvingMatrix: number[][]): string {
     return result;
 }
 
-export function solutionCost(assignmentResult: AssignmentResult): number {
-    let result: number = 0;
+export function solutionCost(assignmentResult: AssignmentResult): bigint {
+    let result: bigint = 0n;
 
     const assignmentData: AssignmentData = assignmentResult.assignmentData;
 
@@ -192,7 +192,8 @@ export function solutionCost(assignmentResult: AssignmentResult): number {
         let tandemIndex: number = assignmentData.tandemIds.indexOf(assignment.tandemName);
         if (tandemIndex !== -1) {
             result += assignmentData.solvingMatrix[pilotIndex][tandemIndex];
-        } // Warning ne rend que les coûts d'affection, sans les coûts de non affectation
+        } //else result +=incompatibleWeight;  
+        // Warning ne rend que les coûts d'affection, sans les coûts de non affectation
         //    assignment.pilotName llklk
     });
     return result;
