@@ -36,17 +36,11 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
     const solvingMatrix: bigint[][] = [];
     const allTandems = new Map<string, number>();
 
-    let weight: bigint = BigInt(0);
-    const pow_factor: bigint = BigInt(Math.max(pilots.length, allTandems.size))
-    let weightIncrement: bigint = pow_factor ** (pow_factor - BigInt(1));
-    incompatibleWeight = pow_factor ** (pow_factor + BigInt(1));
+    let weightIncrement: bigint = BigInt(1);
+    let increments: bigint[] = [];
 
     // sort pilots so higher-point pilots get priority (descending)
     pilots.sort((a, b) => a.points - b.points);
-
-    weightIncrement = BigInt(1);
-    let sum: bigint = BigInt(0);
-    let increments: bigint[] = [];
 
     //--- compute optimization weights and tandem list.
     pilots.slice().reverse().forEach((pilot: Pilot) => {
@@ -56,10 +50,12 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
             + BigInt(1);
     });
 
-    console.log("increments: %O",increments);
+    console.log("increments: %O", increments);
 
     let i = 0;
     let previous_acculumated_line: bigint = BigInt(0);
+    let sum: bigint = BigInt(0);
+    let weight: bigint = BigInt(0);
 
     pilots.forEach((pilot: Pilot) => {
         const wishes: bigint[] = [];
@@ -78,7 +74,6 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
         });
         previous_acculumated_line += weight;
         i++;
-        weightIncrement += sum + BigInt(1);
         weight++;
         solvingMatrix.push(wishes);
     });
