@@ -91,5 +91,5 @@ if (fs.existsSync(bestSolutionFilename)) {
     applySolutionFileToAssignmentResult(bestSolutionFilename, assignmentResult);
     const bestSolutionCost = solutionCost(assignmentResult);
     console.log("Best solution cost: " + bestSolutionCost);
-    console.log("Delta solution cost ( <0 => computed is better ): " + (bestSolutionCost - computedSolutionCost));
+    console.log("Delta solution cost ( <0 => computed is better ): " + (computedSolutionCost - bestSolutionCost));
 }
