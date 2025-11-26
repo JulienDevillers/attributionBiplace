@@ -1,0 +1,11 @@
+Pilote	Biplace
+A	I
+B	J
+C	K
+D	L
+E	M
+F	N
+G	O
+H	P
+I	Q
+J	R
