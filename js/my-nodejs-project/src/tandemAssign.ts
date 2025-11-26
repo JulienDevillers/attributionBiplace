@@ -24,6 +24,8 @@ export interface AssignmentResult {
     assignmentData: AssignmentData;
 }
 
+let incompatibleWeight: number = 0
+
 /*
  * Based on a Pilot array, build all data that will be used to do the processing
  * algotithm and to build an understandable solution from the result of the previously
@@ -65,7 +67,8 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
 
     //--- square the matrix part 1: assign weigths for incompatible assignations.
     const maxDim: number = Math.max(allTandems.size, pilots.length);
-    const incompatibleWeight: number = weight;
+    const pow_factor = Math.max(pilots.length, allTandems.size)
+    incompatibleWeight = Math.pow(pow_factor, pow_factor + 1);
 
     for (let i = 0; i < pilots.length; i++) {
         for (let j = 0; j < maxDim; j++) {
