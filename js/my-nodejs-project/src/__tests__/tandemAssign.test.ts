@@ -152,5 +152,28 @@ describe('assignTandemToPilots', () => {
     expect(getAssignmentForPilotName(result.assignments, 'E')?.tandemName).toBe('L');
     expect(getAssignmentForPilotName(result.assignments, 'F')?.tandemName).toBe('M');
   });
+
+  it('should solve this set unorderd 6', () => {
+    const pilots: Pilot[] = [
+      { name: 'E', points: 2, wishes: ['I', 'J', 'L'] },
+      { name: 'B', points: 4, wishes: ['I'] },
+      { name: 'D', points: 1, wishes: ['K'] },
+      { name: 'F', points: 3, wishes: ['I', 'J', 'M'] },
+      { name: 'C', points: 5, wishes: ['J', 'K'] },
+      { name: 'A', points: 6, wishes: ['I', 'J', 'K'] },
+    ];
+    const result = assignTandemToPilots(pilots);
+
+    expect(result).toBeDefined();
+    expect(result.assignments).toBeDefined();
+    expect(result.assignments.length).toBe(6);
+    expect(result.assignmentData).toBeDefined();
+    expect(getAssignmentForPilotName(result.assignments, 'A')?.tandemName).toBe(undefined);
+    expect(getAssignmentForPilotName(result.assignments, 'B')?.tandemName).toBe('I');
+    expect(getAssignmentForPilotName(result.assignments, 'C')?.tandemName).toBe('J');
+    expect(getAssignmentForPilotName(result.assignments, 'D')?.tandemName).toBe('K');
+    expect(getAssignmentForPilotName(result.assignments, 'E')?.tandemName).toBe('L');
+    expect(getAssignmentForPilotName(result.assignments, 'F')?.tandemName).toBe('M');
+  });
 });
 
