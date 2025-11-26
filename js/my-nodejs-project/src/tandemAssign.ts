@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import munkres from "munkres";
-import computeMunkres from "./munkres2.js";
 
 export interface Pilot {
     name?: string;
@@ -109,13 +108,6 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
     console.log(result.pilots);
 
     return result;
-}
-
-/*
- * Implementation Nr2 of munkres algorithm
- */
-function compute2(matrix: number[][]): number[][] {
-    return computeMunkres(matrix);
 }
 
 /*
