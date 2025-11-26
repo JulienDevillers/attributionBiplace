@@ -60,6 +60,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
 
     let i = 0;
     let sum_line: bigint = BigInt(0);
+
     pilots.forEach((pilot: Pilot) => {
         const wishes: bigint[] = [];
 
@@ -75,7 +76,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
             sum += wishes[tandemIndex];
             weight += increments[i];
         });
-        sum_line += sum;
+        sum_line += weight;
         i++;
         weightIncrement += sum + BigInt(1);
         weight++;
