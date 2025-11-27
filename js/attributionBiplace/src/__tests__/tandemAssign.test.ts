@@ -17,14 +17,14 @@ function getAssignmentForPilotName(assignments: Assignment[], pilotName: string)
     return assignment.pilotName === pilotName;
   });
 }
-
+ 
 describe('assignTandemToPilots', () => {
   it('should solve this set 1', () => {
     const pilots: Pilot[] = [
       { name: 'A', points: 1, wishes: ['I', 'J', 'K'] },
       { name: 'B', points: 2, wishes: ['I', 'J', 'K'] },
       { name: 'C', points: 3, wishes: ['I', 'J', 'K'] },
-    ];
+    ]; 
 
     const result = assignTandemToPilots(pilots);
 
