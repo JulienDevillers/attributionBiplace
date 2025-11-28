@@ -72,11 +72,11 @@ def export_random_test_to_js_munkres(tests, filename_radix):
 
 def export_random_test_to_js_biplace_booking(tests, dir):
     with  open(os.path.join(dir, "index.ts"), "w") as findex:
-        with open(os.path.join(dir, "test-case-random.test.ts"), "w") as f:
+        with open(os.path.join(dir, "test-case-random.ts"), "w") as f:
             f.write(JS_BIPLACE_BOOKING_HEADER)
             i = 0
             for test in tests:
-                findex.write("export { testCaseRandom%d } from './test-case-random'\n" % i)
+                findex.write("export { testCaseRandom%d } from './test-case-random';\n" % i)
 
                 pilots = test[0]
                 results = test[1]
@@ -85,7 +85,7 @@ def export_random_test_to_js_biplace_booking(tests, dir):
                 f.write("  const createdAt = DateValueObject.fromDate(new Date('2025-11-20T10:00:00Z'));\n")
 
                 f.write("  let testBuilder: TestBuilder = new TestBuilder(\n")
-                f.write("     'should attribute packs based on priority and conflict resolution %d',\n" % i)
+                f.write("     'should attribute packs based on priority and conflict resolution %d'\n" % i)
                 f.write("  );\n")
 
                 for pilot in pilots:
@@ -104,4 +104,5 @@ def export_random_test_to_js_biplace_booking(tests, dir):
 
                 f.write("\n  return testBuilder.buildTest();\n ")
 
-                f.write("});\n\n")
+                f.write("});\n\n\n")
+                i += 1
