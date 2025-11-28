@@ -1,7 +1,10 @@
 import csv
+import os.path
 import random as random
 import time
 from multiprocessing.managers import Array
+
+from exports import *
 
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
@@ -15,18 +18,6 @@ from multiprocessing.managers import Array
 # 5- La solution retenue est la première qui permet de servir tous les pilotes avec un matériel différent pour chaque
 # 6- S'il n'existe pas de solution parce qu'il y a des conflits de souhait de matériels entre les pilotes,
 #     on fait rentrer le pilote suivant en terme de priorité dans le calcul et on recommence en 3
-
-class Pilot:
-    def __init__(self):
-        self.name = ""
-        self.canardos = 0
-        self.requests = []
-        self.served = False
-        self.index = 0
-        return
-
-    def add_requested_hardware(self, hardware: str):
-        self.requests.append(hardware)
 
 
 class Run:
@@ -66,19 +57,41 @@ def toStr(attributions: list[str], pilots: list[Pilot], showUnsatisfiedAttributi
     result = result[:-2] + "]"
     return result
 
+def attributions_to_Array(attributions: list[str], pilots: list[Pilot]) -> list[list]:
+    result = []
+    bookings = {}
+    i = 0
+    for attribution in attributions:
+        satisfied = False
+        if not attribution in bookings:
+            bookings[attribution] = 1
+            satisfied = True
+        if satisfied:
+            result.append([pilots[i].name, attribution])
+        else:
+           result.append([pilots[i].name, ""])
+        i += 1
+    return result
+
 
 def evaluate(combination: list[str]):
     unique = set(combination)
     return len(unique)
 
 
-def assign(pilots: list[Pilot], hardwaresCount):
+def assign(pilots: list[Pilot]):
     start_ns = time.time_ns()
     bestCombination: list[str] = None
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    pilots_count_for_run = min(len(pilots), hardwaresCount)
+    hardwares = []
+    for pilot in pilots:
+        for request in pilot.requests:
+            hardwares.append(request)
+    hardwares = list(set(hardwares))
+
+    pilots_count_for_run = min(len(pilots), len(hardwares))
     found: bool = False
 
     while not found and pilots_count_for_run <= len(pilots):
@@ -101,12 +114,13 @@ def assign(pilots: list[Pilot], hardwaresCount):
             if evaluation > bestEvaluation:
                 bestCombination = combination.copy()
                 bestEvaluation = evaluation
-                found = bestEvaluation == hardwaresCount
+                found = bestEvaluation == len(hardwares)
 
         pilots_count_for_run += 1
 
     print("\nBest combination:")
     print(toStr(bestCombination, selected_pilots, False) + " -> " + str(bestEvaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+    return attributions_to_Array(bestCombination, selected_pilots)
 
 
 def load_data(filename: str):
@@ -137,7 +151,7 @@ def run_from_file(filename: str):
     assign(pilots, len(hardwares))
 
 
-def run_random():
+def build_random_problem():
     MAX_PILOT = 9
     MAX_HARDWARE = 9
     pilots: list[Pilot] = []
@@ -167,16 +181,30 @@ def run_random():
             used_hardwares.append(tandem)
 
         pilots.append(pilot)
+    return pilots
 
-    used_hardwares = list(set(used_hardwares))
-    assign(pilots, len(used_hardwares))
+
+def produce_random_test_and_result():
+    pilots = build_random_problem()
+    result = assign(pilots)
+
+    return pilots, result
+
+
+def produce_random_tests(dir, count):
+    tests = []
+    for i in range(0, count):
+        pilots, result = produce_random_test_and_result()
+        tests.append([pilots, result])
+
+    export_random_test_to_js_munkres(tests, dir)
+    export_random_test_to_js_biplace_booking(tests, dir)
 
 
 def main():
     # run_from_file(r"../tests/test9.txt")
 
-    for i in range(1, 100):
-        run_random()
+    produce_random_tests('/home/ju/dev/attributionBiplace/testsAuto', 100)
 
 
 if __name__ == '__main__':
