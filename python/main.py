@@ -1,6 +1,7 @@
 import csv
+import random as random
 import time
-import sys
+from multiprocessing.managers import Array
 
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
@@ -29,7 +30,7 @@ class Pilot:
 
 
 class Run:
-    def getFirstCombination(self, pilots: list[Pilot])->list[str]:
+    def getFirstCombination(self, pilots: list[Pilot]) -> list[str]:
         result = []
         for pilot in pilots:
             pilot.index = 0
@@ -77,13 +78,13 @@ def assign(pilots: list[Pilot], hardwaresCount):
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
-    i = hardwaresCount
+    pilots_count_for_run = min(len(pilots), hardwaresCount)
     found: bool = False
 
-    while not found and i <= len(pilots):
+    while not found and pilots_count_for_run <= len(pilots):
 
-        print("\nRun " + str(i) + " pilotes")
-        selected_pilots = pilots[:i]
+        #        print("\nRun " + str(pilots_count_for_run) + " pilotes")
+        selected_pilots = pilots[:pilots_count_for_run]
 
         run = Run()
 
@@ -102,7 +103,7 @@ def assign(pilots: list[Pilot], hardwaresCount):
                 bestEvaluation = evaluation
                 found = bestEvaluation == hardwaresCount
 
-        i += 1
+        pilots_count_for_run += 1
 
     print("\nBest combination:")
     print(toStr(bestCombination, selected_pilots, False) + " -> " + str(bestEvaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
@@ -131,9 +132,51 @@ def load_data(filename: str):
     return pilots, hardwares
 
 
-def main():
-    pilots, hardwares = load_data(r"../tests/testJPDS.txt")
+def run_from_file(filename: str):
+    pilots, hardwares = load_data(filename)
     assign(pilots, len(hardwares))
+
+
+def run_random():
+    MAX_PILOT = 9
+    MAX_HARDWARE = 9
+    pilots: list[Pilot] = []
+    used_hardwares = []
+
+    hardware_count = int(random.random() * MAX_HARDWARE) + 1
+    pilots_count = int(random.random() * MAX_PILOT) + 1
+
+    canardos = list(range(0, 100))
+
+    for i in range(0, pilots_count):
+        pilot = Pilot()
+        pilot.name = chr(ord('A') + i)
+
+        canardos_id = int(random.random() * len(canardos))
+        pilot.canardos = canardos[canardos_id]
+        canardos.remove(pilot.canardos)
+
+        remaining_tandems = list(chr(ord('I') + i) for i in range(hardware_count))
+
+        wish_count = int(random.random() * hardware_count) + 1
+        for j in range(0, wish_count):
+            tandem_id = int(random.random() * len(remaining_tandems))
+            tandem = remaining_tandems[tandem_id]
+            pilot.add_requested_hardware(tandem)
+            remaining_tandems.remove(tandem)
+            used_hardwares.append(tandem)
+
+        pilots.append(pilot)
+
+    used_hardwares = list(set(used_hardwares))
+    assign(pilots, len(used_hardwares))
+
+
+def main():
+    # run_from_file(r"../tests/test9.txt")
+
+    for i in range(1, 100):
+        run_random()
 
 
 if __name__ == '__main__':
