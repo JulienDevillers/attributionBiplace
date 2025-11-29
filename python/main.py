@@ -125,7 +125,6 @@ def assign(pilots: list[Pilot]):
 
 def load_data(filename: str):
     pilots: list[Pilot] = []
-    hardwares: list[str] = []
 
     with open(filename, 'r') as csvfile:
         #    with sys.stdin as csvfile:
@@ -138,17 +137,14 @@ def load_data(filename: str):
             for i in range(2, len(row)):
                 hardware = row[i]
                 pilot.add_requested_hardware(hardware)
-                hardwares.append(hardware)
             pilots.append(pilot)
 
-    hardwares = list(set(hardwares))
-    print("Hardware: " + str(hardwares))
-    return pilots, hardwares
+    return pilots
 
 
 def run_from_file(filename: str):
-    pilots, hardwares = load_data(filename)
-    assign(pilots, len(hardwares))
+    pilots = load_data(filename)
+    assign(pilots)
 
 
 def build_random_problem():
@@ -202,9 +198,9 @@ def produce_random_tests(dir, count):
 
 
 def main():
-    # run_from_file(r"../tests/test9.txt")
+    run_from_file(r"../tests/test11.txt")
 
-    produce_random_tests('/home/ju/dev/attributionBiplace/testsAuto', 100)
+    #produce_random_tests(r'd:/dev/attributionBiplace/testsAuto', 500)
 
 
 if __name__ == '__main__':

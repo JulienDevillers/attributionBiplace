@@ -2,7 +2,7 @@ import os.path
 
 from types_ import Pilot
 
-JS_MUNKRES_HEADER = """import { assignTandemToPilots } from '../tandemAssign';
+JS_MUNKRES_HEADER = """import { assignTandemToPilots } from './tandemAssign';
 
 interface Pilot {
   name?: string;
@@ -94,15 +94,14 @@ def export_random_test_to_js_biplace_booking(tests, dir):
                     for request in pilot_.requests:
                         wishes += "'%s', " % request
 
+                    assigned = "undefined"
                     for result in results:
-                        if result[0]==pilot_.name:
-                            if result[1] == "":
-                                assigned = "undefined"
-                            else:
+                        if result[0] == pilot_.name:
+                            if result[1] != "":
                                 assigned = "'" + result[1] + "'"
                     f.write("  testBuilder.addWish('%s', %d, createdAt, [%s], %s);\n" % (pilot_.name, pilot_.canardos, wishes, assigned))
 
                 f.write("\n  return testBuilder.buildTest();\n ")
 
-                f.write("});\n\n\n")
+                f.write("};\n\n\n")
                 i += 1
