@@ -5,7 +5,10 @@ import {
     Pilot,
     AssignmentResult,
     Assignment
-} from './tandemAssign.js';;
+} from './tandemAssign.js';
+
+import munkres from "munkres";
+
 
 
 /*
@@ -23,7 +26,7 @@ function loadPilotArayFromFile(filename: string): Pilot[] {
                 if (line.trim() !== "") {
                     const s = "-" + line + "-";
                     console.log(s);
-                    const pilot: Pilot = { wishes: [], points: 0 };
+                    const pilot: Pilot = { name: "", wishes: [], points: 0 };
 
                     line.split("\t").forEach((item: string, idx: number) => {
                         switch (idx) {
