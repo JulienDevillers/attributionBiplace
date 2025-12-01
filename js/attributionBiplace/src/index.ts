@@ -81,7 +81,28 @@ function applySolutionFileToAssignmentResult(filename: string, assignementResult
         });
 }
 
+function testRectangleMunkres() {
+    let mat: number[][] = [
+        [0, 1],
+        [0, 1],
+        [0, 1],
+    ];
+    let m = munkres(mat);
+    console.log("munkres 3 pilotes 2 biplaces ");
+    console.log(m);
 
+   mat = [
+        [0, 1, 2],
+        [0, 1, 2],
+    ];
+     m = munkres(mat);
+    console.log("munkres 3 pilotes 3 biplaces ");
+    console.log(m);
+}
+
+
+
+//testRectangleMunkres();
 
 const filename: string = "../../tests/testJPDS.txt";
 const assignmentResult: AssignmentResult = assignTandemToPilotsFromTestFile(filename);
