@@ -1,14 +1,17 @@
 import csv
+import multiprocessing as mp
+import queue
 import random
 import threading
+import time
+from multiprocessing import Manager
 
 from exports import *
 from tandemAssign import assign
-import multiprocessing as mp
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
-MAX_PILOTS_FOR_RANDOM_TEST = 25
+MAX_PILOTS_FOR_RANDOM_TEST = 30
 MAX_HARDWARE_FOR_RANDOM_TEST = 10
 
 
@@ -40,12 +43,12 @@ def build_random_problem():
     pilots: list[Pilot] = []
     used_hardwares = []
 
-    hardware_count = int(random.random() * MAX_HARDWARE_FOR_RANDOM_TEST) + 1
-    pilots_count = int(random.random() * MAX_PILOTS_FOR_RANDOM_TEST) + 1
+    hardware_count = int(random.random() * (MAX_HARDWARE_FOR_RANDOM_TEST - 1)) + 2
+    pilots_count = int(random.random() * (MAX_PILOTS_FOR_RANDOM_TEST - 1)) + 2
 
-    canardos = list(range(0, 100))
+    canardos = list(range(100))
 
-    for i in range(0, pilots_count):
+    for i in range(pilots_count):
         pilot = Pilot()
         pilot.name = chr(ord('A') + i)
 
@@ -56,7 +59,7 @@ def build_random_problem():
         remaining_tandems = list(chr(ord('I') + i) for i in range(hardware_count))
 
         wish_count = int(random.random() * hardware_count) + 1
-        for j in range(0, wish_count):
+        for j in range(wish_count):
             tandem_id = int(random.random() * len(remaining_tandems))
             tandem = remaining_tandems[tandem_id]
             pilot.add_requested_hardware(tandem)
@@ -70,59 +73,75 @@ def build_random_problem():
 def produce_a_random_test_and_result():
     pilots = build_random_problem()
     result = assign(pilots)
-
     return pilots, result
 
 
-def produce_random_tests_fn(tests_list :mp.Queue, output_list_queue):
-    while (True):
+def produce_random_tests_fn(tests_list: mp.Queue, output_list_queue: mp.Queue):
+    while True:
         try:
-            id = tests_list.get(True, timeout=1)
-            print("Building test " + str(id) + " " + str(threading.get_native_id()))
+            ident = tests_list.get(True, timeout=0.01)
             pilots, result = produce_a_random_test_and_result()
-            output_list_queue.put([pilots, result])
-        except mp.Queue.Empty:
-            print ("empty")
+            output_list_queue.put([pilots, result], block=True, timeout=10)
+            print("End test " + str(ident) + " " + str(threading.get_native_id()) + " " + str(output_list_queue.qsize()))
+        except queue.Empty:
+            print("stop")
             break
+    print("end process " + str(threading.get_native_id()))
 
 
-
-def produce_random_tests(directory, count):
+def produce_random_tests(directory, count, timeout_s):
     threads_count = 16
-    # Use a Queue to safely collect results from all processes
-    results_queue = mp.Queue()
-    tests_queue=mp.Queue()
-    for i in range(0, count):
-        tests_queue.put(i)
-    processes = []
+    # Use a Queue and a manager to safely collect results from all processes
+    with Manager() as manager:
+        results_queue = manager.Queue(count + 10)
+        tests_todo_queue = manager.Queue()
+        for i in range(count):
+            tests_todo_queue.put(i)
 
-    for i in range(threads_count):
-        p = mp.Process(target=produce_random_tests_fn,
-                       args=(tests_queue, results_queue))
-        processes.append(p)
+        processes = []
+        for i in range(threads_count):
+            p = mp.Process(target=produce_random_tests_fn,
+                           args=(tests_todo_queue, results_queue))
+            p.start()
+            processes.append(p)
 
-    # Start and Join the processes
-    for p in processes:
-        p.start()
-    i=0
-    for p in processes:
-        p.join()
-        print("----------- join " + str(i))
-        i+=1
+        # Timout management
+        if timeout_s != -1:
+            start = time.time()
+            while time.time() - start <= timeout_s:
+                if not any(p.is_alive() for p in processes):
+                    # All the processes are done, break now.
+                    break
+                time.sleep(1)  # Just to avoid hogging the CPU
+            else:
+                # We only enter this if we didn't 'break' above.
+                print("timed out, killing all processes")
+                for p in processes:
+                    p.terminate()
+                    p.join()
+        else:
+            for p in processes:
+                p.join()
 
-    # Collect results from the queue after all processes finish
-    tests = []
-    while not results_queue.empty():
-        tests.append(results_queue.get())
+        # Collect results from the queue after all processes finish
+        tests = []
+        while True:
+            try:
+                tests.append(results_queue.get_nowait())
+            except queue.Empty:
+                break
+        print(len(tests))
 
-    export_random_test_to_js_munkres(tests, directory)
-    export_random_test_to_js_biplace_booking(tests, directory)
+        export_random_test_to_js_munkres(tests, directory)
+        export_random_test_to_js_biplace_booking(tests, directory)
+
+    print("End of generation")
 
 
 def main():
     # run_from_file(r"../tests/test13.txt")
 
-    produce_random_tests(r'../testsAuto', 500)
+    produce_random_tests(r'../testsAuto', 1000, 4*60*60)
 
 
 if __name__ == '__main__':
