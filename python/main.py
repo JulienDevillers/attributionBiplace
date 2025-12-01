@@ -1,9 +1,9 @@
 import csv
-import random as random
+import random
+import threading
 from tandemAssign import assign
 
 from exports import *
-
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
@@ -66,28 +66,42 @@ def build_random_problem():
     return pilots
 
 
-def produce_random_test_and_result():
+def produce_a_random_test_and_result():
     pilots = build_random_problem()
     result = assign(pilots)
 
     return pilots, result
 
 
-def produce_random_tests(dir, count):
-    tests = []
+def produce_random_tests_fn(count, outputlist):
     for i in range(0, count):
         print("Building test " + str(i))
-        pilots, result = produce_random_test_and_result()
-        tests.append([pilots, result])
+        pilots, result = produce_a_random_test_and_result()
+        outputlist.append([pilots, result])
+
+
+def produce_random_tests(dir, count):
+    threads_count = 8
+    tests = []
+
+    threads = []
+    for i in range(0, threads_count):
+        t = threading.Thread(target=produce_random_tests_fn, args=(int(count / threads_count), tests), kwargs={})
+        threads.append(t)
+
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
     export_random_test_to_js_munkres(tests, dir)
     export_random_test_to_js_biplace_booking(tests, dir)
 
 
 def main():
-    run_from_file(r"../tests/test13.txt")
+   # run_from_file(r"../tests/test13.txt")
 
-    #produce_random_tests(r'd:/dev/attributionBiplace/testsAuto', 500)
+    produce_random_tests(r'd:/dev/attributionBiplace/testsAuto', 500)
 
 
 if __name__ == '__main__':
