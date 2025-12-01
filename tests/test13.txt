@@ -1,0 +1,10 @@
+Pilote	priorité	request_1	request_2	request_3	request_4	request_5	request_6
+H	23	N
+B	36	N
+F	49	K	N
+E	50	I	K
+D	51	K	I	J
+I	58	K	I	J
+A	68	J	I	M	L
+G	71	I
+C	83	L	N	M	K	J	I

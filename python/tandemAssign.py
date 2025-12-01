@@ -21,7 +21,7 @@ class Run:
             result.append(pilot.requests[0])
         return result
 
-# Renvoie la prochaine combinaison en modifiant en premier le bas de l'arbre (pilotes les moins prioritaires)
+    # Renvoie la prochaine combinaison en modifiant en premier le bas de l'arbre (pilotes les moins prioritaires)
     def getNextCombination(self, pilots: list[Pilot], result: list[str]):
         for i in range(len(pilots) - 1, -1, -1):
             pilot = pilots[i]
@@ -69,23 +69,37 @@ def attributions_to_Array(attributions: list[str], pilots: list[Pilot]) -> list[
     return result
 
 
+def this_unassigned_is_better_than_this(this_is_better, than):
+    if len(this_is_better) < len(than):
+        return True
+    if len(this_is_better) > len(than):
+        return False
+
+    i = 0
+    while i < len(this_is_better):
+        if this_is_better[i] > than[i]:
+            return True
+        i += 1
+    return False
+
+
 # Renvoie le nombre d'affectations et l'id du premier non affecté trouvé.
 # l'idée étant que le but est que le premier non affecté soit  assigné
 # au pilote de priorité la plus faible possible
 def evaluate(combination: list[str]):
     tandems_assigned = set()
-    unassigneds=[]
-    first_unassigned = -1
+    unassigneds = []
     i = 0
     for current_tandem_name in combination:
         current_tandem_as_set = {current_tandem_name}
         if not (tandems_assigned & current_tandem_as_set) == current_tandem_as_set:
             tandems_assigned = tandems_assigned.union(current_tandem_as_set)
-        elif first_unassigned == -1:
-            first_unassigned = i
+        else:
+            unassigneds.append(i)
         i += 1
 
-    return len(tandems_assigned), first_unassigned
+    return len(tandems_assigned), unassigneds
+
 
 # Principe:
 # On travaille sur des itérations à n, puis n+1, puis n+2 pilotes plus prioritaires.
@@ -120,22 +134,23 @@ def assign(pilots: list[Pilot]):
         run = Run()
 
         combination = run.getFirstCombination(selected_pilots)
-        bestEvaluation, bestLast = evaluate(combination)
+        bestEvaluation, bestUnassigneds = evaluate(combination)
         bestCombination = combination.copy()
 
+
         count = 0
-        print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation) + " / " + str(bestLast))
+        print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation) + " / " + str(bestUnassigneds))
 
         while run.getNextCombination(selected_pilots, combination):
             count += 1
-            evaluation, last = evaluate(combination)
-            if evaluation > bestEvaluation or (evaluation == bestEvaluation and last > bestLast):
+            evaluation, unassigneds = evaluate(combination)
+            if evaluation > bestEvaluation or (evaluation == bestEvaluation and this_unassigned_is_better_than_this(unassigneds, bestUnassigneds)):
                 bestCombination = combination.copy()
                 bestEvaluation = evaluation
-                bestLast = last
-                print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(last)+ " best")
+                bestUnassigneds = unassigneds
+                print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds)+ " best")
             else:
-                print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(last))
+                print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds))
 
         found = bestEvaluation == len(hardwares)
 

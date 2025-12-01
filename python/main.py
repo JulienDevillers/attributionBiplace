@@ -1,8 +1,5 @@
 import csv
-import os.path
 import random as random
-import time
-from multiprocessing.managers import Array
 from tandemAssign import assign
 
 from exports import *
