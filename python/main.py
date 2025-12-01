@@ -75,7 +75,7 @@ def produce_a_random_test_and_result():
 
 def produce_random_tests_fn(count, outputlist):
     for i in range(0, count):
-        print("Building test " + str(i))
+        print("Building test " + str(i)+ " "+str(threading.get_native_id()))
         pilots, result = produce_a_random_test_and_result()
         outputlist.append([pilots, result])
 
