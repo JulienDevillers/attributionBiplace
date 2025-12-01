@@ -62,7 +62,6 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
         const wishes: bigint[] = [];
 
         pilot.wishes.forEach((tandemName: string) => {
-//todo voir si c'est la bonne façon de coder ça....
             let tandemIndex = allTandems.get(tandemName);
             if (tandemIndex === undefined) {
                 tandemIndex = allTandems.size;
@@ -78,7 +77,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
         weight++;
         solvingMatrix.push(wishes);
     });
-    incompatibleWeight = sum + BigInt(2);  // plutôt que prendre la somme, prendre la sum des max par ligne ?
+    incompatibleWeight = sum + BigInt(1);  // plutôt que prendre la somme, prendre la sum des max par ligne ?
 
     console.log("device size : " + allTandems.size);
     console.log("incompatibleWeight : " + incompatibleWeight);
@@ -93,14 +92,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
             }
         }
     }
-// Ajout d'un coût pour les unassigned
-  /*   for (let i = 0; i < pilots.length; i++) {
-        for (let j = 0; j < maxDim; j++) {
-            solvingMatrix[i][maxDim]=incompatibleWeight-BigInt(1);
-            
-        }
-    }
-*/
+
     console.log("SolvingMatrix : ");
     console.log(solvingMatrix);
 
@@ -108,7 +100,7 @@ function buildAssignmentData(pilots: Pilot[]): AssignmentData {
         tandemIds: [],
         pilots: [],
         solvingMatrix: solvingMatrix,
-        incompatibleWeight: incompatibleWeight-BigInt(1),
+        incompatibleWeight: incompatibleWeight,
     };
 
     allTandems.forEach((index: number, tandemName: string) => {
@@ -138,25 +130,22 @@ function buildResults(
 ): Assignment[] {
     const result: Assignment[] = [];
 
+    // Tous les résulats à undefined
     assignmentData.pilots.forEach(pilot => {
-         let assignmentResult: Assignment = {
-                pilotName: pilot.name,
-                tandemName: undefined
-            };
-    result.push(assignmentResult);
-           
+        let assignmentResult: Assignment = {
+            pilotName: pilot.name,
+            tandemName: undefined
+        };
+        result.push(assignmentResult);
     });
 
-
+    // Affection des résultats affectés de munkres au résultat final
     resultMatrix.forEach((item: number[]) => {
-            // Est-ce que le tandem est dans la liste?
-            if (assignmentData.pilots[item[0]].wishes.find((wish) => {
-                return wish === assignmentData.tandemIds[item[1]];
-            })) {
-     //       if (item[1] !== assignmentData.solvingMatrix[0].length-1) {
-       //         assignmentResult.tandemName = assignmentData.tandemIds[item[1]];
-         //   }
-            result.at(item[0])!.tandemName= assignmentData.tandemIds[item[1]];
+        // Est-ce que le biplace est dans la liste des wish ?
+        if (assignmentData.pilots[item[0]].wishes.find((wish) => {
+            return wish === assignmentData.tandemIds[item[1]];
+        })) {
+            result.at(item[0])!.tandemName = assignmentData.tandemIds[item[1]];
         }
     });
 
