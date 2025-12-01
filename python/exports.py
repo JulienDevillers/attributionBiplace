@@ -2,19 +2,7 @@ import os.path
 
 from types_ import Pilot
 
-JS_MUNKRES_HEADER = """import { assignTandemToPilots } from './tandemAssign';
-
-interface Pilot {
-  name?: string;
-  points: number;
-  wishes: string[];
-}
-
-interface Assignment {
-  pilotName: string;
-  tandemName: string | undefined;
-}
-
+JS_MUNKRES_HEADER = """import { assignTandemToPilots, Pilot, Assignment } from '../tandemAssign';
 
 function getAssignmentForPilotName(assignments: Assignment[], pilotName: string): Assignment | undefined {
   return assignments.find(function (assignment) {
