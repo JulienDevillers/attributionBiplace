@@ -15,9 +15,13 @@ from exports import *
 # 2- On choisit les n pilotes les plus prioritaires
 # 3- On crée toutes les combinaisons d'attribution (pilote-matériel) possibles
 # 4- Elles sont triées par priorité du pilote puis par priorité de souhait de matériel
-# 5- La solution retenue est la première qui permet de servir tous les pilotes avec un matériel différent pour chaque
+# 5- La solution retenue est celle qui permet de servir tous les pilotes avec un matériel différent pour chaque
+#    tout en minimisant la priorité du premier pilote non servi.
 # 6- S'il n'existe pas de solution parce qu'il y a des conflits de souhait de matériels entre les pilotes,
 #     on fait rentrer le pilote suivant en terme de priorité dans le calcul et on recommence en 3
+
+MAX_PILOT_FOR_RANDOM_TEST = 10
+MAX_HARDWARE_FOR_RANDOM_TEST = 10
 
 
 class Run:
@@ -28,6 +32,7 @@ class Run:
             result.append(pilot.requests[0])
         return result
 
+# Renvoie la prochaine combinaison en modifiant en premier le bas de l'arbre (pilotes les moins prioritaires)
     def getNextCombination(self, pilots: list[Pilot], result: list[str]):
         for i in range(len(pilots) - 1, -1, -1):
             pilot = pilots[i]
@@ -57,6 +62,7 @@ def toStr(attributions: list[str], pilots: list[Pilot], showUnsatisfiedAttributi
     result = result[:-2] + "]"
     return result
 
+
 def attributions_to_Array(attributions: list[str], pilots: list[Pilot]) -> list[list]:
     result = []
     bookings = {}
@@ -69,15 +75,36 @@ def attributions_to_Array(attributions: list[str], pilots: list[Pilot]) -> list[
         if satisfied:
             result.append([pilots[i].name, attribution])
         else:
-           result.append([pilots[i].name, ""])
+            result.append([pilots[i].name, ""])
         i += 1
     return result
 
-
+# Renvoie le nombre d'affectations et l'id du premier non affecté trouvé.
+# l'idée étant que le but est que le premier non affecté soit  assigné
+# au pilote de priorité la plus faible possible
 def evaluate(combination: list[str]):
-    unique = set(combination)
-    return len(unique)
+    tandems_assigned = set()
+    first_unassigned = -1
+    i = 0
+    for current_tandem_name in combination:
+        current_tandem_as_set = {current_tandem_name}
+        if not (tandems_assigned & current_tandem_as_set) == current_tandem_as_set:
+            tandems_assigned = tandems_assigned.union(current_tandem_as_set)
+        elif first_unassigned == -1:
+            first_unassigned = i
+        i += 1
 
+    return len(tandems_assigned), first_unassigned
+
+# Principe:
+# On travaille sur des itérations à n, puis n+1, puis n+2 pilotes plus prioritaires.
+# On s'arrête dès qu'on a affecté tous les biplaces
+# Au sein de chaque itération, on calcule toutes les possibilités et on retiens
+# Celle qui affecte du matériel au plus grand nombre de pilote et qui minimise
+# la priorité du premier pilote sans biplace ( = pour deux solutions qui affectent
+# le mm nombre de pilotes avec des pilotes sans affectation, on préfère celle affecte
+# du matériel au pilote de priorité 2 que de priorité 3.
+# L'ordre dans lequle la partie qui produit les solutions fonctionne a son importance.
 
 def assign(pilots: list[Pilot]):
     start_ns = time.time_ns()
@@ -96,25 +123,30 @@ def assign(pilots: list[Pilot]):
 
     while not found and pilots_count_for_run <= len(pilots):
 
-        #        print("\nRun " + str(pilots_count_for_run) + " pilotes")
+        print("\nRun " + str(pilots_count_for_run) + " pilotes")
         selected_pilots = pilots[:pilots_count_for_run]
 
         run = Run()
 
         combination = run.getFirstCombination(selected_pilots)
-        bestEvaluation = evaluate(combination)
+        bestEvaluation, bestLast = evaluate(combination)
         bestCombination = combination.copy()
+
         count = 0
-        #   print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation))
+        #  print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation) + " / " + str(bestLast))
 
         while run.getNextCombination(selected_pilots, combination):
             count += 1
-            evaluation = evaluate(combination)
-            #       print(str(count)+" "+str(combination)+" -> "+str(evaluation))
-            if evaluation > bestEvaluation:
+            evaluation, last = evaluate(combination)
+            if evaluation > bestEvaluation or (evaluation == bestEvaluation and last > bestLast):
                 bestCombination = combination.copy()
                 bestEvaluation = evaluation
-                found = bestEvaluation == len(hardwares)
+                bestLast = last
+        #         print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(last)+ " best")
+        #    else:
+        #       print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(last))
+
+        found = bestEvaluation == len(hardwares)
 
         pilots_count_for_run += 1
 
@@ -148,13 +180,11 @@ def run_from_file(filename: str):
 
 
 def build_random_problem():
-    MAX_PILOT = 9
-    MAX_HARDWARE = 9
     pilots: list[Pilot] = []
     used_hardwares = []
 
-    hardware_count = int(random.random() * MAX_HARDWARE) + 1
-    pilots_count = int(random.random() * MAX_PILOT) + 1
+    hardware_count = int(random.random() * MAX_HARDWARE_FOR_RANDOM_TEST) + 1
+    pilots_count = int(random.random() * MAX_PILOT_FOR_RANDOM_TEST) + 1
 
     canardos = list(range(0, 100))
 
@@ -190,6 +220,7 @@ def produce_random_test_and_result():
 def produce_random_tests(dir, count):
     tests = []
     for i in range(0, count):
+        print("Building test " + str(i))
         pilots, result = produce_random_test_and_result()
         tests.append([pilots, result])
 
@@ -198,9 +229,9 @@ def produce_random_tests(dir, count):
 
 
 def main():
-    run_from_file(r"../tests/test11.txt")
+    # run_from_file(r"../tests/test12.txt")
 
-    #produce_random_tests(r'd:/dev/attributionBiplace/testsAuto', 500)
+    produce_random_tests(r'd:/dev/attributionBiplace/testsAuto', 500)
 
 
 if __name__ == '__main__':
