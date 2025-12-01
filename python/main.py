@@ -1,13 +1,14 @@
 import csv
 import random
 import threading
-from tandemAssign import assign
 
 from exports import *
+from tandemAssign import assign
+import multiprocessing as mp
 
 # format fichier tab :  pilote  canardos    hardware_priority_1 hardware_priority_2 hardware_priority_3 hardware_priority_4 hardware_priority_5 hardware_priority_6
 
-MAX_PILOT_FOR_RANDOM_TEST = 10
+MAX_PILOTS_FOR_RANDOM_TEST = 25
 MAX_HARDWARE_FOR_RANDOM_TEST = 10
 
 
@@ -40,7 +41,7 @@ def build_random_problem():
     used_hardwares = []
 
     hardware_count = int(random.random() * MAX_HARDWARE_FOR_RANDOM_TEST) + 1
-    pilots_count = int(random.random() * MAX_PILOT_FOR_RANDOM_TEST) + 1
+    pilots_count = int(random.random() * MAX_PILOTS_FOR_RANDOM_TEST) + 1
 
     canardos = list(range(0, 100))
 
@@ -73,35 +74,55 @@ def produce_a_random_test_and_result():
     return pilots, result
 
 
-def produce_random_tests_fn(count, outputlist):
+def produce_random_tests_fn(tests_list :mp.Queue, output_list_queue):
+    while (True):
+        try:
+            id = tests_list.get(True, timeout=1)
+            print("Building test " + str(id) + " " + str(threading.get_native_id()))
+            pilots, result = produce_a_random_test_and_result()
+            output_list_queue.put([pilots, result])
+        except mp.Queue.Empty:
+            print ("empty")
+            break
+
+
+
+def produce_random_tests(directory, count):
+    threads_count = 16
+    # Use a Queue to safely collect results from all processes
+    results_queue = mp.Queue()
+    tests_queue=mp.Queue()
     for i in range(0, count):
-        print("Building test " + str(i)+ " "+str(threading.get_native_id()))
-        pilots, result = produce_a_random_test_and_result()
-        outputlist.append([pilots, result])
+        tests_queue.put(i)
+    processes = []
 
+    for i in range(threads_count):
+        p = mp.Process(target=produce_random_tests_fn,
+                       args=(tests_queue, results_queue))
+        processes.append(p)
 
-def produce_random_tests(dir, count):
-    threads_count = 8
+    # Start and Join the processes
+    for p in processes:
+        p.start()
+    i=0
+    for p in processes:
+        p.join()
+        print("----------- join " + str(i))
+        i+=1
+
+    # Collect results from the queue after all processes finish
     tests = []
+    while not results_queue.empty():
+        tests.append(results_queue.get())
 
-    threads = []
-    for i in range(0, threads_count):
-        t = threading.Thread(target=produce_random_tests_fn, args=(int(count / threads_count), tests), kwargs={})
-        threads.append(t)
-
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
-
-    export_random_test_to_js_munkres(tests, dir)
-    export_random_test_to_js_biplace_booking(tests, dir)
+    export_random_test_to_js_munkres(tests, directory)
+    export_random_test_to_js_biplace_booking(tests, directory)
 
 
 def main():
-   # run_from_file(r"../tests/test13.txt")
+    # run_from_file(r"../tests/test13.txt")
 
-    produce_random_tests(r'd:/dev/attributionBiplace/testsAuto', 500)
+    produce_random_tests(r'../testsAuto', 500)
 
 
 if __name__ == '__main__':

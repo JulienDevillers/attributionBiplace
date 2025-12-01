@@ -128,7 +128,7 @@ def assign(pilots: list[Pilot]):
 
     while not found and pilots_count_for_run <= len(pilots):
 
-        print("\nRun " + str(pilots_count_for_run) + " pilotes")
+#        print("\nRun " + str(pilots_count_for_run) + " pilotes")
         selected_pilots = pilots[:pilots_count_for_run]
 
         run = Run()
@@ -139,7 +139,7 @@ def assign(pilots: list[Pilot]):
 
 
         count = 0
-        print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation) + " / " + str(bestUnassigneds))
+ #       print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation) + " / " + str(bestUnassigneds))
 
         while run.getNextCombination(selected_pilots, combination):
             count += 1
@@ -148,14 +148,14 @@ def assign(pilots: list[Pilot]):
                 bestCombination = combination.copy()
                 bestEvaluation = evaluation
                 bestUnassigneds = unassigneds
-                print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds)+ " best")
-            else:
-                print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds))
+            #     print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds)+ " best")
+            # else:
+            #     print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds))
 
         found = bestEvaluation == len(hardwares)
 
         pilots_count_for_run += 1
 
-    print("\nBest combination:")
-    print(toStr(bestCombination, selected_pilots, False) + " -> " + str(bestEvaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+    # print("\nBest combination:")
+    # print(toStr(bestCombination, selected_pilots, False) + " -> " + str(bestEvaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
     return attributions_to_Array(bestCombination, selected_pilots)
