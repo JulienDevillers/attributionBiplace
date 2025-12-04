@@ -10,11 +10,12 @@ import time
 # 4- Elles sont triées par priorité du pilote puis par priorité de souhait de matériel
 # 5- La solution retenue est celle qui permet de servir tous les pilotes avec un matériel différent pour chaque
 #    tout en minimisant la priorité du premier pilote non servi.
-# 6- S'il n'existe pas de solution parce qu'il y a des conflits de souhait de matériels entre les pilotes,
+# 6- S'il n'existe pas de solution parce qu'il y a des conflits de souhaits de matériels entre les pilotes,
 #     on fait rentrer le pilote suivant en terme de priorité dans le calcul et on recommence en 3
 
 class Run:
-    def getFirstCombination(self, pilots: list[Pilot]) -> list[str]:
+    # Renvoie un tableau de biplaces. L ieme est affecté au ieme pilote (ordonné du plus au moins prioritaire)
+    def get_first_combination(self, pilots: list[Pilot]) -> list[str]:
         result = []
         for pilot in pilots:
             pilot.index = 0
@@ -22,7 +23,8 @@ class Run:
         return result
 
     # Renvoie la prochaine combinaison en modifiant en premier le bas de l'arbre (pilotes les moins prioritaires)
-    def getNextCombination(self, pilots: list[Pilot], result: list[str]):
+    # Renvoie un tableau de biplaces. L ieme est affecté au ieme pilote (ordonné du plus au moins prioritaire)
+    def get_next_combination(self, pilots: list[Pilot], result: list[str]):
         for i in range(len(pilots) - 1, -1, -1):
             pilot = pilots[i]
             pilot.index += 1
@@ -36,7 +38,7 @@ class Run:
         return False
 
 
-def toStr(attributions: list[str], pilots: list[Pilot], showUnsatisfiedAttributions: bool) -> str:
+def to_str(attributions: list[str], pilots: list[Pilot], show_unsatisfied_attributions: bool) -> str:
     result = "["
     bookings = {}
     i = 0
@@ -45,14 +47,14 @@ def toStr(attributions: list[str], pilots: list[Pilot], showUnsatisfiedAttributi
         if not attribution in bookings:
             bookings[attribution] = 1
             satisfied = True
-        if satisfied or showUnsatisfiedAttributions:
+        if satisfied or show_unsatisfied_attributions:
             result += "[" + pilots[i].name + ", " + attribution + "], "
         i += 1
     result = result[:-2] + "]"
     return result
 
 
-def attributions_to_Array(attributions: list[str], pilots: list[Pilot]) -> list[list]:
+def attributions_to_array(attributions: list[str], pilots: list[Pilot]) -> list[list]:
     result = []
     bookings = {}
     i = 0
@@ -83,7 +85,7 @@ def this_unassigned_is_better_than_this(this_is_better, than):
     return False
 
 
-# Renvoie le nombre d'affectations et l'id du premier non affecté trouvé.
+# Renvoie le nombre d'affectations et les ids des pilotes non affectés de la solution.
 # l'idée étant que le but est que le premier non affecté soit  assigné
 # au pilote de priorité la plus faible possible
 def evaluate(combination: list[str]):
@@ -104,16 +106,16 @@ def evaluate(combination: list[str]):
 # Principe:
 # On travaille sur des itérations à n, puis n+1, puis n+2 pilotes plus prioritaires.
 # On s'arrête dès qu'on a affecté tous les biplaces
-# Au sein de chaque itération, on calcule toutes les possibilités et on retiens
-# Celle qui affecte du matériel au plus grand nombre de pilote et qui minimise
+# Au sein de chaque itération, on calcule toutes les possibilités et on retient
+# Celle qui affecte du matériel au plus grand nombre de pilotes et qui minimise
 # la priorité du premier pilote sans biplace ( = pour deux solutions qui affectent
-# le mm nombre de pilotes avec des pilotes sans affectation, on préfère celle affecte
+# le mm nombre de pilotes avec des pilotes sans affectation, on préfère celle qui affecte
 # du matériel au pilote de priorité 2 que de priorité 3.
-# L'ordre dans lequle la partie qui produit les solutions fonctionne a son importance.
+# L'ordre dans lequel la partie qui produit les solutions fonctionne a son importance.
 
 def assign(pilots: list[Pilot]):
     start_ns = time.time_ns()
-    bestCombination: list[str] = None
+    best_combination: list[str]
 
     pilots.sort(key=lambda pilot: pilot.canardos)
 
@@ -133,29 +135,29 @@ def assign(pilots: list[Pilot]):
 
         run = Run()
 
-        combination = run.getFirstCombination(selected_pilots)
-        bestEvaluation, bestUnassigneds = evaluate(combination)
-        bestCombination = combination.copy()
+        combination = run.get_first_combination(selected_pilots)
+        best_evaluation, best_unassigneds = evaluate(combination)
+        best_combination = combination.copy()
 
 
         count = 0
- #       print(str(count) + " " + str(combination) + " -> " + str(bestEvaluation) + " / " + str(bestUnassigneds))
+ #       print(str(count) + " " + str(combination) + " -> " + str(best_evaluation) + " / " + str(best_unassigneds))
 
-        while run.getNextCombination(selected_pilots, combination):
+        while run.get_next_combination(selected_pilots, combination):
             count += 1
             evaluation, unassigneds = evaluate(combination)
-            if evaluation > bestEvaluation or (evaluation == bestEvaluation and this_unassigned_is_better_than_this(unassigneds, bestUnassigneds)):
-                bestCombination = combination.copy()
-                bestEvaluation = evaluation
-                bestUnassigneds = unassigneds
+            if evaluation > best_evaluation or (evaluation == best_evaluation and this_unassigned_is_better_than_this(unassigneds, best_unassigneds)):
+                best_combination = combination.copy()
+                best_evaluation = evaluation
+                best_unassigneds = unassigneds
             #     print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds)+ " best")
             # else:
             #     print(str(count) + " " + str(combination) + " -> " + str(evaluation) + " / " + str(unassigneds))
 
-        found = bestEvaluation == len(hardwares)
+        found = best_evaluation == len(hardwares)
 
         pilots_count_for_run += 1
 
     # print("\nBest combination:")
-    # print(toStr(bestCombination, selected_pilots, False) + " -> " + str(bestEvaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
-    return attributions_to_Array(bestCombination, selected_pilots)
+    # print(toStr(best_combination, selected_pilots, False) + " -> " + str(best_evaluation) + " / " + str((time.time_ns() - start_ns) / 1000000000) + "s")
+    return attributions_to_array(best_combination, selected_pilots)
